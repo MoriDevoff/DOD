@@ -1,0 +1,33 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+.venv/
+env/
+
+# Django
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+
+# Секреты и окружение
+.env
+.env.*
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*~
+
+# OS
+.Django/
+Thumbs.db
+Desktop.ini
+
+# Загружаемые пользователем медиа (при необходимости закоммитьте папку с фото вручную)
+# my_django_project/media/

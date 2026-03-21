@@ -1,0 +1,290 @@
+/* Общий сброс */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+:root {
+    /* высота нижнего бара (как у исходного footer: padding 15px + текст ~0.9rem) */
+    --site-footer-height: 72px;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    padding-bottom: calc(var(--site-footer-height) + env(safe-area-inset-bottom, 0px));
+    min-height: 100vh;
+    min-height: 100dvh;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    text-align: center;
+    overflow: hidden;
+    font-family: 'Exo 2', system-ui, sans-serif;
+    font-weight: 500;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    position: relative;
+    background: #000;
+}
+
+/* Логотип института (home, play) — сверху слева, с отступом от края */
+.institute-logo {
+    position: fixed;
+    top: max(4px, env(safe-area-inset-top, 0px));
+    left: calc(24px + env(safe-area-inset-left, 0px));
+    z-index: 5;
+    line-height: 0;
+    filter: drop-shadow(0 2px 10px rgba(0, 0, 0, 0.55));
+    pointer-events: auto;
+}
+
+.institute-logo img {
+    display: block;
+    height: auto;
+    max-height: 400px;
+    max-width: min(60vw, 400px);
+    width: auto;
+    object-fit: contain;
+}
+
+@media (max-width: 600px) {
+    .institute-logo {
+        top: max(4px, env(safe-area-inset-top, 0px));
+        left: calc(16px + env(safe-area-inset-left, 0px));
+    }
+
+    .institute-logo img {
+        max-height: 56px;
+        max-width: min(50vw, 180px);
+    }
+}
+
+.background-slider {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    background-size: cover;
+    background-position: center;
+    transition: background-image 1.5s ease-in-out;
+    filter: blur(4px);
+    transform: scale(1.05);
+}
+
+.content {
+    z-index: 2;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: -150px;          /* подкорректировал под пиксельный шрифт */
+}
+
+h1 {
+    font-family: 'Exo 2', system-ui, sans-serif;
+    font-weight: 700;
+    font-size: 4rem;
+    margin: 0 0 60px 0;
+    text-shadow:
+        4px 4px 0 #000,
+        -4px -4px 0 #000,
+        4px -4px 0 #000,
+        -4px 4px 0 #000;        /* пиксельная обводка вместо размытой тени */
+    letter-spacing: 0.2em;
+    line-height: 1.4;
+}
+
+.play-button,
+.mode-button {
+    font-family: 'Exo 2', system-ui, sans-serif;
+    font-weight: 600;
+    font-size: 1.5rem;
+    padding: 20px 50px;
+    background-color: #e05e2a;
+    color: white;
+    text-decoration: none;
+    border: none;
+    border-radius: 0;            /* квадратные углы для ретро */
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 8px 0 #000;    /* пиксельная "тень" */
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+.play-button:hover,
+.mode-button:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 0 #000;
+}
+
+/* Нижний информационный бар (все страницы) — как исходный footer до унификации */
+.site-footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    padding: 15px 16px calc(15px + env(safe-area-inset-bottom, 0px));
+    font-size: 0.9rem;
+    z-index: 10;
+    font-family: 'Exo 2', system-ui, sans-serif;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    text-align: center;
+}
+
+.site-footer__inner {
+    max-width: 960px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.site-footer__copy {
+    margin: 0;
+    color: #fff;
+    font-weight: 500;
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+
+@media (max-width: 520px) {
+    .site-footer__copy {
+        font-size: 0.85rem;
+    }
+}
+
+/* Страницы игры: карта и фото не заходят под нижний бар */
+body:has(.game-container) .game-container {
+    height: calc(100vh - var(--site-footer-height) - env(safe-area-inset-bottom, 0px));
+    height: calc(100dvh - var(--site-footer-height) - env(safe-area-inset-bottom, 0px));
+    max-height: calc(100dvh - var(--site-footer-height) - env(safe-area-inset-bottom, 0px));
+}
+
+/* Страница выбора режима: блок чуть ниже (ближе к центру, чуть выше середины) */
+body.page-play .content.mode-selection {
+    /* ниже центра flex: был -50px (вверх), теперь чуть вниз к середине экрана */
+    margin-top: clamp(24px, 7vh, 72px);
+}
+
+@media (max-width: 600px) {
+    body.page-play .content.mode-selection {
+        margin-top: clamp(16px, 5vh, 48px);
+    }
+}
+
+/* Для страницы выбора режима — адаптируем */
+.mode-selection h1 {
+    font-size: 3.5rem;
+    margin-bottom: 60px;
+}
+
+.mode-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+}
+
+.messages-container {
+    margin-top: 60px;               /* расстояние от кнопок */
+    min-height: 120px;              /* резерв высоты, чтобы не прыгало */
+    width: 100%;
+    max-width: 700px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+}
+
+/* Сообщения теперь обычные блоки, не absolute */
+.message {
+    margin-top: 0;
+    padding: 20px 40px;
+    border-radius: 12px;
+    font-size: 1.3rem;
+    color: white;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.5);
+    min-height: 80px;
+    line-height: 1.5;
+    width: 100%;
+    text-align: center;
+    transition: opacity 0.6s ease;
+}
+
+/* Самое важное — скрытие должно быть надёжным */
+.message.hidden {
+    display: none !important;
+    opacity: 0 !important;
+}
+
+/* Когда видно */
+.message:not(.hidden) {
+    display: block !important;
+    opacity: 1;
+}
+
+/* Контейнер толкает сообщения вниз */
+.messages-container {
+    margin-top: 60px;
+    min-height: 120px;
+    width: 100%;
+    max-width: 700px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+}
+
+/* Цвета */
+.error-message {
+    background: rgba(231, 76, 60, 0.95);
+}
+
+.final-message {
+    background: #2ecc71;
+    box-shadow: 0 8px 25px rgba(46, 204, 113, 0.5);
+}
+
+.broken {
+    background-color: #575B7A;
+}
+
+.broken:hover {
+    background-color: #464A66;
+}
+
+/* Убедитесь, что кнопки не перекрывают сообщения */
+.mode-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+    margin-bottom: 100px; /* Место для сообщений */
+}
+
+.records-btn {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    z-index: 3;
+    padding: 10px 30px;
+    background-color: #7c88b6;
+    border-radius: 8px;
+    text-decoration: none;
+    color: white;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+    transition: transform 0.3s;
+}
+
+.records-btn:hover {
+    transform: scale(1.05);
+}

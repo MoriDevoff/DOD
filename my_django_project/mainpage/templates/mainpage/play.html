@@ -1,0 +1,90 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Выберите режим</title>
+    <link rel="stylesheet" href="{% static 'mainpage/style.css' %}">
+    <link href="https://fonts.googleapis.com/css2?family=Exo+2:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+</head>
+<body class="page-play">
+    {% include 'mainpage/_institute_logo.html' %}
+
+    <div class="background-slider"></div>
+
+    <div class="content mode-selection">
+        <h1>Выберите режим</h1>
+
+        <div class="mode-buttons">
+            <a href="{% url 'sfu_mode' %}" class="mode-button">СФУ</a>
+            <a href="{% url 'kras_mode' %}" class="mode-button">Красноярск</a>
+            <button id="broken-btn" class="mode-button broken">Не работает</button>
+        </div>
+
+        <!-- Контейнер для сообщений — чтобы они шли ПОД кнопками -->
+        <div class="messages-container">
+            <div id="error-message" class="message error-message hidden">
+                Эта кнопка пока не работает
+            </div>
+
+            <div id="final-message" class="message final-message hidden">
+                Поздравляю, вы очень упорный человек, но эта кнопка всё равно не работает⭐
+            </div>
+        </div>
+    </div>
+
+    {% include 'mainpage/_site_footer.html' %}
+
+    <a href="{% url 'records' %}" class="mode-button records-btn">Рекорды</a>
+
+    <script src="{% static 'mainpage/script.js' %}"></script>
+
+    <script>
+        let clickCount = 0;
+        const MAX_CLICKS = 20;
+        const errorMsg = document.getElementById('error-message');
+        const finalMsg = document.getElementById('final-message');
+        const btn = document.getElementById('broken-btn');
+
+        const base = "Эта кнопка пока не работает";
+
+        // При загрузке страницы принудительно скрываем оба
+        window.addEventListener('load', () => {
+            errorMsg.classList.add('hidden');
+            finalMsg.classList.add('hidden');
+            errorMsg.style.display = 'none';
+            finalMsg.style.display = 'none';
+        });
+
+        btn.addEventListener('click', function() {
+            clickCount++;
+
+            if (clickCount < MAX_CLICKS) {
+                // Обновляем и показываем ошибку
+                errorMsg.textContent = base + '.'.repeat(clickCount);
+                errorMsg.classList.remove('hidden');
+                errorMsg.style.display = 'block';
+                // На всякий случай прячем финальное
+                finalMsg.classList.add('hidden');
+                finalMsg.style.display = 'none';
+            }
+            else if (clickCount === MAX_CLICKS) {
+                // Скрываем ошибку полностью
+                errorMsg.classList.add('hidden');
+                errorMsg.style.display = 'none';
+
+                // Показываем поздравление
+                finalMsg.classList.remove('hidden');
+                finalMsg.style.display = 'block';
+
+                // Блокируем кнопку
+                btn.disabled = true;
+                btn.style.opacity = '0.5';
+                btn.style.cursor = 'not-allowed';
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="c291a8ed-8550-4060-8e6d-a7d8979071bb" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/.idea/WhereIAm.iml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/profiles_settings.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/my_django_project/mainpage/templates/mainpage/home.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/my_django_project/mainpage/templates/mainpage/kras.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/my_django_project/mainpage/templates/mainpage/play.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/my_django_project/mainpage/templates/mainpage/records.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/my_django_project/mainpage/templates/mainpage/sfu.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/my_django_project/mainpage/urls.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/my_django_project/static/mainpage/image1.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/my_django_project/static/mainpage/image2.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/my_django_project/static/mainpage/image3.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/my_django_project/static/mainpage/script.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/my_django_project/static/mainpage/style.css" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Python Script" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 3
+}</component>
+  <component name="ProjectId" id="3AgERaQMyTplA8ENRP6VVf5WEGR" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "git-widget-placeholder": "master",
+    "last_opened_file_path": "C:/Users/bonus/PycharmProjects/WhereIAm/my_django_project/static/mainpage"
+  }
+}]]></component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\Users\bonus\PycharmProjects\WhereIAm\my_django_project\static\mainpage" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\bonus\PycharmProjects\WhereIAm\my_django_project\static\mainpage" />
+    </key>
+  </component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-python-sdk-b3d66beaba9a-c6efb3732140-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-252.26199.168" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="c291a8ed-8550-4060-8e6d-a7d8979071bb" name="Changes" comment="" />
+      <created>1773005805997</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1773005805997</updated>
+    </task>
+    <servers />
+  </component>
+</project>

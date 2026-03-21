@@ -1,0 +1,3 @@
+# WhereIAm / «Где я?» — зависимости Python
+# Установка: pip install -r requirements.txt
+Django>=6.0,<6.1
