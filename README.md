@@ -71,19 +71,29 @@ pip install -r my_django_project/requirements.txt
    python manage.py migrate
    ```
 
-4. (Опционально) Создай суперпользователя для входа в админку:
+4. Загрузи стартовые локации (фото + координаты) из fixture:
+
+   ```bash
+   python manage.py loaddata mainpage/fixtures/initial_locations.json
+   ```
+
+   > Почему это важно: файл `db.sqlite3` обычно не хранится в Git, поэтому после клона база пустая, пока не выполнен `loaddata`.
+
+5. Убедись, что в репозитории есть каталог `my_django_project/media/` с файлами фото локаций (пути к этим фото лежат в fixture).
+
+6. (Опционально) Создай суперпользователя для входа в админку:
 
    ```bash
    python manage.py createsuperuser
    ```
 
-5. Запусти сервер разработки:
+7. Запусти сервер разработки:
 
    ```bash
    python manage.py runserver
    ```
 
-6. Открой в браузере: **http://127.0.0.1:8000/**
+8. Открой в браузере: **http://127.0.0.1:8000/**
 
 Админка Django: **http://127.0.0.1:8000/admin/** (если создавал `createsuperuser`).
 
@@ -131,6 +141,8 @@ WhereIAm/
 |---------|------------|
 | `python manage.py runserver` | Запуск dev-сервера |
 | `python manage.py migrate` | Применить миграции БД |
+| `python manage.py loaddata mainpage/fixtures/initial_locations.json` | Загрузить стартовые локации |
+| `python manage.py dumpdata mainpage.SfuLocation mainpage.KrasLocation --indent 2 > mainpage/fixtures/initial_locations.json` | Обновить fixture из текущей БД |
 | `python manage.py makemigrations` | Создать миграции после изменения моделей |
 
 ---

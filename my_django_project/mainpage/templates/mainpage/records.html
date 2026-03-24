@@ -12,62 +12,128 @@
         .records-container {
             z-index: 2;
             position: relative;
-            width: 80%;
-            margin: 50px auto;
-            padding: 20px;
-            background: rgba(0, 0, 0, 0.7);
-            border-radius: 12px;
-            box-shadow: 0 8px 16px rgba(0,0,0,0.5);
+            width: min(1160px, calc(100% - 40px));
+            margin: 80px auto calc(var(--site-footer-height) + 36px);
+            padding: 28px;
+            background: rgba(0, 0, 0, 0.74);
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            box-shadow: 0 12px 28px rgba(0,0,0,0.55);
             text-align: center;
+        }
+
+        .records-container h1 {
+            margin: 0;
+            font-size: clamp(2.1rem, 5vw, 3rem);
+            letter-spacing: 0.08em;
         }
 
         .tables-row {
             display: flex;
-            gap: 40px;
+            gap: 24px;
             justify-content: space-between;
-            align-items: flex-start;
-            margin-top: 30px;
+            align-items: stretch;
+            margin-top: 24px;
         }
 
         .table-section {
             flex: 1;
+            background: rgba(255, 255, 255, 0.09);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 14px;
+            padding: 16px;
+            backdrop-filter: blur(2px);
+            -webkit-backdrop-filter: blur(2px);
+        }
+
+        .table-section h2 {
+            margin: 4px 0 14px;
+            font-size: 1.65rem;
+            letter-spacing: 0.05em;
         }
 
         table {
             width: 100%;
-            border-collapse: collapse;
-            font-size: 1.2rem;
+            border-collapse: separate;
+            border-spacing: 0;
+            font-size: 1.06rem;
+            overflow: hidden;
+            border-radius: 10px;
         }
 
         th, td {
-            padding: 10px;
-            border: 2px solid #fff;
-            text-shadow: 1px 1px 2px #000;
+            padding: 11px 12px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.55);
         }
 
         th {
-            background: #5c7cfa;
+            background: rgba(92, 124, 250, 0.95);
+            font-weight: 700;
+            font-size: 0.98rem;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
         }
 
         td {
-            background: rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.17);
         }
 
-        .back-btn {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            padding: 10px 30px;
-            background-color: #5c7cfa;
-            border-radius: 8px;
-            text-decoration: none;
-            color: white;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
-            transition: transform 0.3s;
+        tbody tr:last-child td {
+            border-bottom: none;
         }
 
-        .back-btn:hover {
-            transform: scale(1.05);
+        tbody tr:hover td {
+            background: rgba(163, 155, 155, 0.842);
+        }
+
+        .cell-rank {
+            width: 72px;
+            font-weight: 700;
+            text-align: center;
+        }
+
+        .cell-name {
+            text-align: left;
+        }
+
+        .cell-score {
+            width: 110px;
+            text-align: right;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .medal {
+            margin-left: 8px;
+        }
+
+        .empty-row td {
+            text-align: center;
+            font-style: italic;
+            color: rgba(255, 255, 255, 0.82);
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        @media (max-width: 920px) {
+            .tables-row {
+                flex-direction: column;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .records-container {
+                width: calc(100% - 18px);
+                margin-top: 94px;
+                padding: 14px;
+            }
+
+            table {
+                font-size: 0.95rem;
+            }
+
+            th, td {
+                padding: 10px 8px;
+            }
         }
     </style>
 </head>
@@ -81,26 +147,64 @@
             <div class="table-section">
                 <h2>СФУ</h2>
                 <table>
-                    <tr><th>Имя</th><th>Очки</th></tr>
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Имя</th>
+                            <th>Очки</th>
+                        </tr>
+                    </thead>
+                    <tbody>
                     {% for record in sfu_records %}
-                        <tr><td>{{ record.name }}</td><td>{{ record.score }}</td></tr>
+                        <tr>
+                            <td class="cell-rank">{{ forloop.counter }}</td>
+                            <td class="cell-name">
+                                {{ record.name }}
+                                {% if forloop.counter == 1 %}<span class="medal">🥇</span>{% endif %}
+                                {% if forloop.counter == 2 %}<span class="medal">🥈</span>{% endif %}
+                                {% if forloop.counter == 3 %}<span class="medal">🥉</span>{% endif %}
+                            </td>
+                            <td class="cell-score">{{ record.score }}</td>
+                        </tr>
+                    {% empty %}
+                        <tr class="empty-row"><td colspan="3">Пока нет рекордов</td></tr>
                     {% endfor %}
+                    </tbody>
                 </table>
             </div>
 
             <div class="table-section">
                 <h2>Красноярск</h2>
                 <table>
-                    <tr><th>Имя</th><th>Очки</th></tr>
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Имя</th>
+                            <th>Очки</th>
+                        </tr>
+                    </thead>
+                    <tbody>
                     {% for record in kras_records %}
-                        <tr><td>{{ record.name }}</td><td>{{ record.score }}</td></tr>
+                        <tr>
+                            <td class="cell-rank">{{ forloop.counter }}</td>
+                            <td class="cell-name">
+                                {{ record.name }}
+                                {% if forloop.counter == 1 %}<span class="medal">🥇</span>{% endif %}
+                                {% if forloop.counter == 2 %}<span class="medal">🥈</span>{% endif %}
+                                {% if forloop.counter == 3 %}<span class="medal">🥉</span>{% endif %}
+                            </td>
+                            <td class="cell-score">{{ record.score }}</td>
+                        </tr>
+                    {% empty %}
+                        <tr class="empty-row"><td colspan="3">Пока нет рекордов</td></tr>
                     {% endfor %}
+                    </tbody>
                 </table>
             </div>
         </div>
     </div>
 
-    <a href="{% url 'play' %}" class="back-btn">Назад</a>
+    <a href="{% url 'play' %}" class="mode-button howto-back-btn">Назад</a>
 
     {% include 'mainpage/_site_footer.html' %}
 

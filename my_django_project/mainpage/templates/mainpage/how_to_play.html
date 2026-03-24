@@ -1,0 +1,52 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Как играть</title>
+    <link rel="stylesheet" href="{% static 'mainpage/style.css' %}">
+    <link href="https://fonts.googleapis.com/css2?family=Exo+2:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+</head>
+<body class="page-howto">
+    {% include 'mainpage/_institute_logo.html' %}
+    <div class="background-slider"></div>
+
+    <main class="howto-page">
+        <h1>Как играть</h1>
+
+        <section class="howto-card">
+            <div class="howto-text">
+                <h2>Шаг 1. Выберите режим</h2>
+                <p>На странице выбора режима нажмите «СФУ» или «Красноярск».</p>
+            </div>
+        </section>
+
+        <section class="howto-card">
+            <div class="howto-text">
+                <h2>Шаг 2. Отметьте место на карте</h2>
+                <p>Смотрите фотографию и кликом ставьте маркер в точке, где, как вам кажется, сделан снимок.</p>
+            </div>
+        </section>
+
+        <section class="howto-card">
+            <div class="howto-text">
+                <h2>Шаг 3. Подтвердите выбор и получите очки</h2>
+                <p>Нажмите «Подтвердить выбор». Чем ближе к правильной точке, тем больше очков (максимум 5000).</p>
+            </div>
+        </section>
+
+        <section class="howto-card">
+            <div class="howto-text">
+                <h2>Шаг 4. Пройдите 5 раундов</h2>
+                <p>После последнего раунда введите имя, сохраните результат и проверьте себя в таблице рекордов.</p>
+            </div>
+        </section>
+    </main>
+
+    <a href="{% url 'play' %}" class="mode-button howto-back-btn">Назад</a>
+    {% include 'mainpage/_site_footer.html' %}
+    <script src="{% static 'mainpage/script.js' %}"></script>
+</body>
+</html>

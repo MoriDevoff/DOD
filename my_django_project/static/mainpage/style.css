@@ -288,3 +288,178 @@ body.page-play .content.mode-selection {
 .records-btn:hover {
     transform: scale(1.05);
 }
+
+.how-to-play-btn {
+    position: absolute;
+    left: 20px;
+    bottom: calc(var(--site-footer-height) + 24px);
+    z-index: 3;
+    padding: 10px 30px;
+    background-color: #2f9e44;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+}
+
+.how-to-play-btn:hover {
+    transform: scale(1.05);
+}
+
+.frog-btn {
+    position: fixed;
+    right: 96px;
+    bottom: calc(var(--site-footer-height) + 94px);
+    z-index: 4;
+    padding: 10px;
+    border: 2px solid rgba(255, 255, 255, 0.75);
+    border-radius: 18px;
+    background: linear-gradient(135deg, rgba(58, 79, 42, 0.42), rgba(122, 154, 86, 0.42));
+    cursor: pointer;
+    box-shadow:
+        0 12px 26px rgba(0, 0, 0, 0.48),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.2),
+        0 0 18px rgba(149, 201, 74, 0.35);
+    transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.frog-btn img {
+    display: block;
+    width: clamp(150px, 18vw, 230px);
+    height: auto;
+    border-radius: 12px;
+    filter: drop-shadow(0 8px 14px rgba(0, 0, 0, 0.45));
+}
+
+.frog-btn:hover {
+    transform: translateY(-2px) scale(1.03);
+}
+
+.frog-btn.dropped,
+.frog-btn:disabled {
+    cursor: default;
+    opacity: 0.95;
+}
+
+.frog-btn:disabled:hover {
+    transform: none;
+}
+
+.frog-toast {
+    position: fixed;
+    right: 24px;
+    bottom: calc(var(--site-footer-height) + 46px);
+    z-index: 6;
+    background: rgba(0, 0, 0, 0.78);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    color: #fff;
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    letter-spacing: 0.02em;
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity 0.25s ease, transform 0.25s ease;
+    pointer-events: none;
+}
+
+.frog-toast.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Страница инструкции */
+body.page-howto {
+    overflow-y: auto;
+    overflow-x: hidden;
+    align-items: stretch;
+}
+
+body.page-howto .background-slider {
+    position: fixed;
+}
+
+.howto-page {
+    z-index: 2;
+    width: min(1100px, calc(100% - 48px));
+    margin: 120px auto calc(var(--site-footer-height) + 48px);
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.howto-page h1 {
+    margin: 0 0 16px;
+    font-size: clamp(2.1rem, 5vw, 3.3rem);
+}
+
+.howto-card {
+    display: block;
+    padding: 20px;
+    background: rgba(128, 128, 128, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 12px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.45);
+}
+
+.howto-text {
+    text-align: left;
+}
+
+.howto-text h2 {
+    margin: 0 0 10px;
+    font-size: 1.55rem;
+}
+
+.howto-text p {
+    margin: 0;
+    font-size: 1.1rem;
+    line-height: 1.55;
+}
+
+.howto-back-btn {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 11;
+    background-color: #7e8ab8;
+    border-radius: 8px;
+    padding: 10px 30px;
+    text-decoration: none;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+}
+
+.howto-back-btn:hover {
+    transform: scale(1.05);
+}
+
+@media (max-width: 600px) {
+    .how-to-play-btn {
+        left: 12px;
+        bottom: calc(var(--site-footer-height) + 14px);
+        padding: 8px 18px;
+        font-size: 1.05rem;
+    }
+
+    .frog-btn {
+        right: 22px;
+        bottom: calc(var(--site-footer-height) + 76px);
+        padding: 7px;
+        border-radius: 14px;
+    }
+
+    .frog-toast {
+        right: 12px;
+        bottom: calc(var(--site-footer-height) + 34px);
+        font-size: 0.86rem;
+    }
+
+    .howto-page {
+        width: calc(100% - 20px);
+        margin-top: 100px;
+        margin-bottom: calc(var(--site-footer-height) + 24px);
+        gap: 14px;
+    }
+
+    .howto-card {
+        padding: 14px;
+    }
+}

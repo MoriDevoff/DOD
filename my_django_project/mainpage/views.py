@@ -16,6 +16,10 @@ def play(request):
     return render(request, 'mainpage/play.html')
 
 
+def how_to_play(request):
+    return render(request, 'mainpage/how_to_play.html')
+
+
 # ───────────────────────────────────────────────
 # Общие вспомогательные функции
 # ───────────────────────────────────────────────
@@ -44,8 +48,9 @@ def calculate_score_kras(distance_km):
     Плавное падение очков на дистанциях до ~25 км.
     """
     max_score = 5000
+    perfect_radius_km = 0.05  # 50 м "идеального попадания" для города
     max_distance = 25.0
-    if distance_km <= 0:
+    if distance_km <= perfect_radius_km:
         return max_score
     if distance_km >= max_distance:
         return 0
@@ -65,8 +70,9 @@ def calculate_score_sfu(distance_km):
     Быстрое падение очков на малых дистанциях (до ~2 км).
     """
     max_score = 5000
+    perfect_radius_km = 0.01  # 10 м "идеального попадания" для СФУ
     max_distance = 2.0
-    if distance_km <= 0:
+    if distance_km <= perfect_radius_km:
         return max_score
     if distance_km >= max_distance:
         return 0
