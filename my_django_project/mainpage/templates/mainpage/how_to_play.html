@@ -26,7 +26,7 @@
         <section class="howto-card">
             <div class="howto-text">
                 <h2>Шаг 2. Отметьте место на карте</h2>
-                <p>Смотрите фотографию и кликом ставьте маркер в точке, где, как вам кажется, сделан снимок.</p>
+                <p>Смотрите фотографию и кликом ставьте маркер на карте.</p>
             </div>
         </section>
 
@@ -34,6 +34,7 @@
             <div class="howto-text">
                 <h2>Шаг 3. Подтвердите выбор и получите очки</h2>
                 <p>Нажмите «Подтвердить выбор». Чем ближе к правильной точке, тем больше очков (максимум 5000).</p>
+                <p>Для получения максимального количества очков есть опредлённый радиус от правильной точки. Для СФУ это 10 метров, для Красноярска 50 метров.</p>
             </div>
         </section>
 
@@ -45,7 +46,7 @@
         </section>
     </main>
 
-    <a href="{% url 'play' %}" class="mode-button howto-back-btn">Назад</a>
+    <a href="{% url 'home' %}" class="mode-button howto-back-btn">Назад</a>
     {% include 'mainpage/_site_footer.html' %}
     <script src="{% static 'mainpage/script.js' %}"></script>
 </body>

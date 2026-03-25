@@ -1,7 +1,9 @@
-from django.shortcuts import render, redirect
+import json
+from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.views.decorators.http import require_POST
+from django.contrib.admin.views.decorators import staff_member_required
 from .models import SfuLocation, SfuRecord, KrasLocation, KrasRecord
 import random
 import traceback
@@ -347,3 +349,107 @@ def reset_game(request, mode: str):
         request.session.modified = True
         return redirect('play')
     return redirect('play')
+
+
+# ───────────────────────────────────────────────
+# Админ-страница: редактор локаций на карте
+# (только для staff)
+# ───────────────────────────────────────────────
+
+
+@staff_member_required
+@ensure_csrf_cookie
+def admin_locations_page(request):
+    return render(request, 'mainpage/admin_locations.html')
+
+
+@staff_member_required
+def admin_locations_data(request):
+    locations = []
+
+    for loc in SfuLocation.objects.all().order_by('id'):
+        locations.append({
+            'model': 'sfu',
+            'id': loc.id,
+            'latitude': loc.latitude,
+            'longitude': loc.longitude,
+            'photo_url': loc.photo.url if loc.photo else None,
+        })
+
+    for loc in KrasLocation.objects.all().order_by('id'):
+        locations.append({
+            'model': 'kras',
+            'id': loc.id,
+            'latitude': loc.latitude,
+            'longitude': loc.longitude,
+            'photo_url': loc.photo.url if loc.photo else None,
+        })
+
+    return JsonResponse({'locations': locations})
+
+
+@staff_member_required
+@require_POST
+@ensure_csrf_cookie
+def admin_location_update(request):
+    try:
+        payload = json.loads(request.body.decode('utf-8') or '{}')
+    except json.JSONDecodeError:
+        return JsonResponse({'success': False, 'error': 'Invalid JSON'}, status=400)
+
+    model = (payload.get('model') or '').lower()
+    location_id = payload.get('id')
+
+    try:
+        latitude = float(payload.get('latitude'))
+        longitude = float(payload.get('longitude'))
+    except (TypeError, ValueError):
+        return JsonResponse({'success': False, 'error': 'Invalid latitude/longitude'}, status=400)
+
+    if model not in {'sfu', 'kras'} or not location_id:
+        return JsonResponse({'success': False, 'error': 'Invalid model/id'}, status=400)
+
+    if model == 'sfu':
+        obj = get_object_or_404(SfuLocation, id=location_id)
+    else:
+        obj = get_object_or_404(KrasLocation, id=location_id)
+
+    obj.latitude = latitude
+    obj.longitude = longitude
+    obj.save(update_fields=['latitude', 'longitude'])
+
+    return JsonResponse({'success': True})
+
+
+@staff_member_required
+@require_POST
+@ensure_csrf_cookie
+def admin_location_create(request):
+    model = (request.POST.get('model') or '').lower()
+    try:
+        latitude = float(request.POST.get('latitude'))
+        longitude = float(request.POST.get('longitude'))
+    except (TypeError, ValueError):
+        return JsonResponse({'success': False, 'error': 'Invalid latitude/longitude'}, status=400)
+
+    photo = request.FILES.get('photo')
+    if not photo:
+        return JsonResponse({'success': False, 'error': 'Photo is required'}, status=400)
+
+    if model == 'sfu':
+        obj = SfuLocation.objects.create(photo=photo, latitude=latitude, longitude=longitude)
+    elif model == 'kras':
+        obj = KrasLocation.objects.create(photo=photo, latitude=latitude, longitude=longitude)
+    else:
+        return JsonResponse({'success': False, 'error': 'Invalid model'}, status=400)
+
+    return JsonResponse({
+        'success': True,
+        'location': {
+            'model': model,
+            'id': obj.id,
+            'latitude': obj.latitude,
+            'longitude': obj.longitude,
+            'photo_url': obj.photo.url if obj.photo else None,
+        }
+    })

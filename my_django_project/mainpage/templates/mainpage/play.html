@@ -20,17 +20,22 @@
         <h1>Выберите режим</h1>
 
         <div class="mode-buttons">
-            <a href="{% url 'sfu_mode' %}" class="mode-button">СФУ</a>
-            <a href="{% url 'kras_mode' %}" class="mode-button">Красноярск</a>
-            <button id="broken-btn" class="mode-button broken">Не работает</button>
+            <a href="{% url 'sfu_mode' %}" class="mode-button play-mode-button">
+                <img class="play-mode-icon" src="{% static 'mainpage/SFUplay.png' %}" alt="SFU">
+                <span class="play-mode-label">СФУ</span>
+            </a>
+            <a href="{% url 'kras_mode' %}" class="mode-button play-mode-button">
+                <img class="play-mode-icon" src="{% static 'mainpage/KRASplay.png' %}" alt="KRAS">
+                <span class="play-mode-label">Красноярск</span>
+            </a>
+            <button id="broken-btn" class="mode-button broken play-mode-button" type="button">
+                <img class="play-mode-icon" src="{% static 'mainpage/NOTplay.png' %}" alt="Не работает">
+                <span class="play-mode-label" id="broken-btn-label">Не работает</span>
+            </button>
         </div>
 
-        <!-- Контейнер для сообщений — чтобы они шли ПОД кнопками -->
+        <!-- Сообщение с пасхалкой после 10 нажатий -->
         <div class="messages-container">
-            <div id="error-message" class="message error-message hidden">
-                Эта кнопка пока не работает
-            </div>
-
             <div id="final-message" class="message final-message hidden">
                 Поздравляю, вы очень упорный человек, но эта кнопка всё равно не работает⭐
             </div>
@@ -38,9 +43,6 @@
     </div>
 
     {% include 'mainpage/_site_footer.html' %}
-
-    <a href="{% url 'records' %}" class="mode-button records-btn">Рекорды</a>
-    <a href="{% url 'how_to_play' %}" class="mode-button how-to-play-btn">Как играть</a>
     <button id="frog-btn" class="frog-btn" type="button" aria-label="Жабка">
         <img
             id="frog-img"
@@ -55,25 +57,23 @@
 
     <div id="frog-toast" class="frog-toast hidden">Вы уронили жабку</div>
 
+    <a href="{% url 'home' %}" class="mode-button play-back-home-btn">Назад</a>
+
     <script src="{% static 'mainpage/script.js' %}"></script>
 
     <script>
         let clickCount = 0;
-        const MAX_CLICKS = 20;
-        const errorMsg = document.getElementById('error-message');
+        const MAX_CLICKS = 10;
         const finalMsg = document.getElementById('final-message');
         const btn = document.getElementById('broken-btn');
+        const btnLabel = document.getElementById('broken-btn-label');
         const frogBtn = document.getElementById('frog-btn');
         const frogImg = document.getElementById('frog-img');
         const frogToast = document.getElementById('frog-toast');
 
-        const base = "Эта кнопка пока не работает";
-
-        // При загрузке страницы принудительно скрываем оба
+        // При загрузке страницы скрываем финальное сообщение
         window.addEventListener('load', () => {
-            errorMsg.classList.add('hidden');
             finalMsg.classList.add('hidden');
-            errorMsg.style.display = 'none';
             finalMsg.style.display = 'none';
 
             // Предзагрузка 2-й картинки жабки, чтобы замена была мгновенной.
@@ -82,27 +82,23 @@
         });
 
         btn.addEventListener('click', function() {
+            if (btn.disabled) return;
             clickCount++;
 
             if (clickCount < MAX_CLICKS) {
-                // Обновляем и показываем ошибку
-                errorMsg.textContent = base + '.'.repeat(clickCount);
-                errorMsg.classList.remove('hidden');
-                errorMsg.style.display = 'block';
-                // На всякий случай прячем финальное
-                finalMsg.classList.add('hidden');
-                finalMsg.style.display = 'none';
-            }
-            else if (clickCount === MAX_CLICKS) {
-                // Скрываем ошибку полностью
-                errorMsg.classList.add('hidden');
-                errorMsg.style.display = 'none';
-
-                // Показываем поздравление
+                if (clickCount === 1) {
+                    btnLabel.textContent = 'Не работает';
+                } else if (clickCount <= 6) {
+                    btnLabel.textContent = 'всё ещё не работает';
+                } else {
+                    btnLabel.textContent = 'Хватит нажимать';
+                }
+            } else {
+                // 10-е нажатие: показываем пасхалку
+                btnLabel.textContent = 'Хватит нажимать';
                 finalMsg.classList.remove('hidden');
                 finalMsg.style.display = 'block';
 
-                // Блокируем кнопку
                 btn.disabled = true;
                 btn.style.opacity = '0.5';
                 btn.style.cursor = 'not-allowed';

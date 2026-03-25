@@ -1,0 +1,284 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Админ: редактирование локаций</title>
+    <link rel="stylesheet" href="{% static 'mainpage/style.css' %}">
+    <link href="https://fonts.googleapis.com/css2?family=Exo+2:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+        body.page-admin-locations {
+            overflow: auto !important;
+        }
+
+        .admin-page {
+            position: relative;
+            z-index: 2;
+            width: min(1200px, calc(100% - 32px));
+            margin: 90px auto 40px;
+        }
+
+        .admin-grid {
+            display: grid;
+            grid-template-columns: 1fr 360px;
+            gap: 18px;
+            align-items: start;
+        }
+
+        @media (max-width: 980px) {
+            .admin-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        #admin-map {
+            height: 70vh;
+            min-height: 520px;
+            border-radius: 14px;
+            border: 1px solid rgba(255, 255, 255, 0.18);
+        }
+
+        .admin-card {
+            background: rgba(0, 0, 0, 0.65);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            border-radius: 14px;
+            padding: 16px;
+        }
+
+        .admin-card h2 {
+            margin: 0 0 12px;
+            font-size: 1.45rem;
+        }
+
+        .admin-row {
+            margin: 12px 0;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .admin-row label {
+            font-size: 0.95rem;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .admin-input, .admin-select {
+            padding: 10px 12px;
+            border-radius: 10px;
+            border: 1px solid rgba(92, 124, 250, 0.5);
+            background: rgba(0, 0, 0, 0.4);
+            color: #fff;
+            font-size: 1rem;
+            outline: none;
+        }
+
+        .admin-btn {
+            width: 100%;
+            padding: 12px 14px;
+            border-radius: 10px;
+            border: none;
+            background: #5c7cfa;
+            color: #fff;
+            cursor: pointer;
+            font-size: 1.05rem;
+        }
+
+        .admin-hint {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.75);
+            line-height: 1.4;
+        }
+
+        .marker-popup-photo {
+            max-width: 200px;
+            max-height: 110px;
+            display: block;
+            margin-top: 6px;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+
+<body class="page-admin-locations">
+    {% include 'mainpage/_institute_logo.html' %}
+    <div class="background-slider"></div>
+
+    <div class="admin-page">
+        <h1 style="margin:0 0 16px;">Админ: локации на карте</h1>
+
+        <div class="admin-grid">
+            <div id="admin-map"></div>
+
+            <div class="admin-card">
+                <h2>Добавить/изменить</h2>
+
+                {% csrf_token %}
+
+                <div class="admin-row">
+                    <label for="model-select">Таблица</label>
+                    <select id="model-select" class="admin-select">
+                        <option value="sfu">SFU</option>
+                        <option value="kras">KRAS</option>
+                    </select>
+                </div>
+
+                <div class="admin-row">
+                    <label for="photo-input">Фото (обязательно для добавления)</label>
+                    <input id="photo-input" class="admin-input" type="file" accept="image/*">
+                </div>
+
+                <div class="admin-row">
+                    <label>Координаты (можно кликнуть по карте)</label>
+                    <input id="lat-input" class="admin-input" type="number" step="0.0000001">
+                    <input id="lon-input" class="admin-input" type="number" step="0.0000001">
+                </div>
+
+                <div class="admin-row">
+                    <button id="add-location-btn" class="admin-btn" type="button">Добавить локацию</button>
+                </div>
+
+                <p class="admin-hint">
+                    Перетаскивай маркеры: координаты сохраняются в БД на `dragend`.
+                    Для добавления: выбери таблицу, кликни по карте (или задай координаты), загрузить фото, нажми «Добавить локацию».
+                </p>
+            </div>
+        </div>
+    </div>
+
+    {% include 'mainpage/_site_footer.html' %}
+
+    <script>
+        const DATA_URL = "{% url 'admin_locations_data' %}";
+        const UPDATE_URL = "{% url 'admin_location_update' %}";
+        const CREATE_URL = "{% url 'admin_location_create' %}";
+
+        const csrfToken = document.querySelector('input[name="csrfmiddlewaretoken"]').value;
+
+        const map = L.map('admin-map').setView([56.01, 92.87], 11);
+
+        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            referrerPolicy: 'strict-origin-when-cross-origin',
+            attribution: '&copy; OpenStreetMap contributors'
+        }).addTo(map);
+
+        let markers = [];
+        let draftMarker = null;
+
+        const latInput = document.getElementById('lat-input');
+        const lonInput = document.getElementById('lon-input');
+        const modelSelect = document.getElementById('model-select');
+        const photoInput = document.getElementById('photo-input');
+        const addBtn = document.getElementById('add-location-btn');
+
+        function setInputs(lat, lon) {
+            latInput.value = lat;
+            lonInput.value = lon;
+        }
+
+        function ensureDraftMarker(lat, lon) {
+            if (!draftMarker) {
+                draftMarker = L.marker([lat, lon], { draggable: false }).addTo(map);
+            } else {
+                draftMarker.setLatLng([lat, lon]);
+            }
+        }
+
+        map.on('click', function(e) {
+            const lat = e.latlng.lat;
+            const lon = e.latlng.lng;
+            setInputs(lat, lon);
+            ensureDraftMarker(lat, lon);
+        });
+
+        async function loadLocations() {
+            const res = await fetch(DATA_URL, { method: 'GET' });
+            const data = await res.json();
+
+            markers.forEach(m => m.remove());
+            markers = [];
+
+            for (const loc of data.locations) {
+                const marker = L.marker([loc.latitude, loc.longitude], { draggable: true });
+
+                marker.on('dragend', async function() {
+                    const ll = marker.getLatLng();
+                    setInputs(ll.lat, ll.lng);
+
+                    await fetch(UPDATE_URL, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': csrfToken
+                        },
+                        body: JSON.stringify({
+                            model: loc.model,
+                            id: loc.id,
+                            latitude: ll.lat,
+                            longitude: ll.lng
+                        })
+                    });
+                });
+
+                const popupParts = [
+                    `<div><b>${loc.model.toUpperCase()} #${loc.id}</b><br>`,
+                    `lat: ${loc.latitude.toFixed(6)}<br>`,
+                    `lon: ${loc.longitude.toFixed(6)}`
+                ];
+                if (loc.photo_url) {
+                    popupParts.push(`<img class="marker-popup-photo" src="${loc.photo_url}" alt="photo">`);
+                }
+                popupParts.push(`</div>`);
+
+                marker.bindPopup(popupParts.join(''));
+                marker.addTo(map);
+                markers.push(marker);
+            }
+        }
+
+        addBtn.addEventListener('click', async function() {
+            const model = modelSelect.value;
+            const lat = parseFloat(latInput.value);
+            const lon = parseFloat(lonInput.value);
+            const photo = photoInput.files[0];
+
+            if (!Number.isFinite(lat) || !Number.isFinite(lon)) {
+                alert('Укажи координаты на карте (lat/lon).');
+                return;
+            }
+            if (!photo) {
+                alert('Загрузи фото для новой локации.');
+                return;
+            }
+
+            const fd = new FormData();
+            fd.append('model', model);
+            fd.append('latitude', String(lat));
+            fd.append('longitude', String(lon));
+            fd.append('photo', photo);
+
+            const res = await fetch(CREATE_URL, {
+                method: 'POST',
+                headers: { 'X-CSRFToken': csrfToken },
+                body: fd
+            });
+            const data = await res.json();
+
+            if (!data.success) {
+                alert(data.error || 'Ошибка при создании локации');
+                return;
+            }
+
+            // Грузим заново маркеры, чтобы увидеть новую точку
+            await loadLocations();
+        });
+
+        loadLocations();
+    </script>
+</body>
+</html>
+

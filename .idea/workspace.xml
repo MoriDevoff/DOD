@@ -5,23 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="c291a8ed-8550-4060-8e6d-a7d8979071bb" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/WhereIAm.iml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/profiles_settings.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/my_django_project/mainpage/templates/mainpage/home.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/my_django_project/mainpage/templates/mainpage/kras.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/my_django_project/mainpage/templates/mainpage/play.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/my_django_project/mainpage/templates/mainpage/records.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/my_django_project/mainpage/templates/mainpage/sfu.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/my_django_project/mainpage/urls.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/my_django_project/static/mainpage/image1.jpg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/my_django_project/static/mainpage/image2.jpg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/my_django_project/static/mainpage/image3.jpg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/my_django_project/static/mainpage/script.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/my_django_project/static/mainpage/style.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/my_django_project/static/mainpage/style.css" beforeDir="false" afterPath="$PROJECT_DIR$/my_django_project/static/mainpage/style.css" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -52,7 +37,7 @@
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
     "RunOnceActivity.git.unshallow": "true",
-    "git-widget-placeholder": "master",
+    "git-widget-placeholder": "main",
     "last_opened_file_path": "C:/Users/bonus/PycharmProjects/WhereIAm/my_django_project/static/mainpage"
   }
 }]]></component>

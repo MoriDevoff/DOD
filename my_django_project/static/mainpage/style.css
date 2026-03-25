@@ -195,6 +195,107 @@ body.page-play .content.mode-selection {
     gap: 25px;
 }
 
+.home-extra-buttons {
+    margin-top: 26px;
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+    align-items: center;
+}
+
+.home-extra-button {
+    text-transform: none;
+}
+
+body.page-home .play-button,
+body.page-home .home-extra-button {
+    width: clamp(240px, 70vw, 380px);
+    min-height: 78px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+body.page-home .play-button {
+    text-transform: none;
+}
+
+/* Кнопки-режимы на странице play: иконка сверху + текст */
+body.page-play .mode-buttons {
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 22px;
+    margin-bottom: 40px; /* чтобы сообщения не уезжали слишком вниз */
+}
+
+/* Кнопки-режимы на странице play: квадрат + иконка как фон + текст поверх */
+body.page-play .play-mode-button {
+    position: relative;
+    overflow: hidden;
+    width: clamp(150px, 22vw, 230px);
+    height: clamp(150px, 22vw, 230px);
+    padding: 0;
+    border-radius: 22px;
+
+    /* фон на случай если картинка не загрузилась */
+    background: rgba(0, 0, 0, 0.35);
+    box-shadow: 0 14px 0 #000;
+}
+
+body.page-play .play-mode-button:hover {
+    transform: none;
+    box-shadow: 0 14px 0 #000;
+}
+
+body.page-play .play-mode-icon {
+    position: absolute;
+    /* КАРТИНКА почти полностью заполняет кнопку:
+       отступы от краёв: 10px, а снизу оставляем место под текст (48px). */
+    top: 10px;
+    left: 10px;
+    right: 10px;
+    bottom: 48px;
+    width: auto;
+    height: auto;
+    object-fit: cover;
+    border-radius: 14px;
+    filter: drop-shadow(0 8px 14px rgba(0, 0, 0, 0.45));
+}
+
+body.page-play .play-mode-label {
+    position: absolute;
+    left: 10px;
+    right: 10px;
+    bottom: 10px;
+    text-align: center;
+    padding: 8px 10px;
+    border-radius: 12px;
+    background: rgba(0, 0, 0, 0.35);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
+    font-size: 1.2rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    text-transform: none;
+    z-index: 2;
+}
+
+.play-back-home-btn {
+    position: fixed;
+    bottom: calc(var(--site-footer-height) + 14px);
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 9;
+    padding: 12px 34px;
+    border-radius: 10px;
+    background-color: rgba(88, 115, 255, 0.95);
+}
+
+.play-back-home-btn:hover {
+    transform: translateX(-50%) scale(1.03);
+}
+
 .messages-container {
     margin-top: 60px;               /* расстояние от кнопок */
     min-height: 120px;              /* резерв высоты, чтобы не прыгало */
