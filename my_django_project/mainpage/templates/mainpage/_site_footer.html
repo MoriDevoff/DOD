@@ -1,6 +1,8 @@
 {# Единый нижний бар — правь текст здесь, он на всех страницах #}
 <footer class="site-footer" role="contentinfo">
     <div class="site-footer__inner">
-        <p class="site-footer__copy">Авторы: Кафедра ГИС · Все права защищены © 2026</p>
+        <p class="site-footer__copy">
+            Авторы: <a href="{% url 'authors' %}" class="site-footer__authors-link">Кафедра ГИС</a> · Все права защищены © 2026
+        </p>
     </div>
 </footer>

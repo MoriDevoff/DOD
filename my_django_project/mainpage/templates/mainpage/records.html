@@ -57,8 +57,23 @@
             border-collapse: separate;
             border-spacing: 0;
             font-size: 1.06rem;
-            overflow: hidden;
+            overflow: visible;
             border-radius: 10px;
+        }
+
+        .records-table-scroll {
+            max-height: 380px;
+            overflow-y: auto;
+            overflow-x: hidden;
+            border-radius: 10px;
+        }
+
+        .records-table-scroll thead th {
+            position: sticky;
+            top: 0;
+            z-index: 2;
+            /* важно для sticky: фон должен быть непрозрачным */
+            background: rgba(92, 124, 250, 0.98);
         }
 
         th, td {
@@ -131,83 +146,124 @@
                 font-size: 0.95rem;
             }
 
+            .records-table-scroll {
+                max-height: 280px;
+            }
+
             th, td {
                 padding: 10px 8px;
             }
         }
     </style>
 </head>
-<body>
+<body class="page-records">
     <div class="background-slider"></div>
 
-    <div class="records-container">
-        <h1>Рекорды</h1>
+    <div class="records-layout">
+        <button class="records-statue-btn records-statue-btn--left" type="button" data-quote="Это всего лишь игра.">
+            <img src="{% static 'mainpage/state1.png' %}" alt="Статуя 1">
+        </button>
 
-        <div class="tables-row">
-            <div class="table-section">
-                <h2>СФУ</h2>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>#</th>
-                            <th>Имя</th>
-                            <th>Очки</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                    {% for record in sfu_records %}
-                        <tr>
-                            <td class="cell-rank">{{ forloop.counter }}</td>
-                            <td class="cell-name">
-                                {{ record.name }}
-                                {% if forloop.counter == 1 %}<span class="medal">🥇</span>{% endif %}
-                                {% if forloop.counter == 2 %}<span class="medal">🥈</span>{% endif %}
-                                {% if forloop.counter == 3 %}<span class="medal">🥉</span>{% endif %}
-                            </td>
-                            <td class="cell-score">{{ record.score }}</td>
-                        </tr>
-                    {% empty %}
-                        <tr class="empty-row"><td colspan="3">Пока нет рекордов</td></tr>
-                    {% endfor %}
-                    </tbody>
-                </table>
-            </div>
+        <div class="records-container">
+            <h1>Рекорды</h1>
 
-            <div class="table-section">
-                <h2>Красноярск</h2>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>#</th>
-                            <th>Имя</th>
-                            <th>Очки</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                    {% for record in kras_records %}
-                        <tr>
-                            <td class="cell-rank">{{ forloop.counter }}</td>
-                            <td class="cell-name">
-                                {{ record.name }}
-                                {% if forloop.counter == 1 %}<span class="medal">🥇</span>{% endif %}
-                                {% if forloop.counter == 2 %}<span class="medal">🥈</span>{% endif %}
-                                {% if forloop.counter == 3 %}<span class="medal">🥉</span>{% endif %}
-                            </td>
-                            <td class="cell-score">{{ record.score }}</td>
-                        </tr>
-                    {% empty %}
-                        <tr class="empty-row"><td colspan="3">Пока нет рекордов</td></tr>
-                    {% endfor %}
-                    </tbody>
-                </table>
+            <div class="tables-row">
+                <div class="table-section">
+                    <h2>СФУ</h2>
+                    <div class="records-table-scroll">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Имя</th>
+                                    <th>Очки</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            {% for record in sfu_records %}
+                                <tr>
+                                    <td class="cell-rank">{{ forloop.counter }}</td>
+                                    <td class="cell-name">
+                                        {{ record.name }}
+                                        {% if forloop.counter == 1 %}<span class="medal">🥇</span>{% endif %}
+                                        {% if forloop.counter == 2 %}<span class="medal">🥈</span>{% endif %}
+                                        {% if forloop.counter == 3 %}<span class="medal">🥉</span>{% endif %}
+                                    </td>
+                                    <td class="cell-score">{{ record.score }}</td>
+                                </tr>
+                            {% empty %}
+                                <tr class="empty-row"><td colspan="3">Пока нет рекордов</td></tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="table-section">
+                    <h2>Красноярск</h2>
+                    <div class="records-table-scroll">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Имя</th>
+                                    <th>Очки</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            {% for record in kras_records %}
+                                <tr>
+                                    <td class="cell-rank">{{ forloop.counter }}</td>
+                                    <td class="cell-name">
+                                        {{ record.name }}
+                                        {% if forloop.counter == 1 %}<span class="medal">🥇</span>{% endif %}
+                                        {% if forloop.counter == 2 %}<span class="medal">🥈</span>{% endif %}
+                                        {% if forloop.counter == 3 %}<span class="medal">🥉</span>{% endif %}
+                                    </td>
+                                    <td class="cell-score">{{ record.score }}</td>
+                                </tr>
+                            {% empty %}
+                                <tr class="empty-row"><td colspan="3">Пока нет рекордов</td></tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
         </div>
+
+        <button class="records-statue-btn records-statue-btn--right" type="button" data-quote="Главное не победа, а участие.">
+            <img src="{% static 'mainpage/state2.png' %}" alt="Статуя 2">
+        </button>
     </div>
 
     <a href="{% url 'home' %}" class="mode-button howto-back-btn">Назад</a>
+    <div id="records-statue-toast" class="records-statue-toast hidden"></div>
 
     {% include 'mainpage/_site_footer.html' %}
 
     <script src="{% static 'mainpage/script.js' %}"></script>
+    <script>
+        const statueButtons = document.querySelectorAll('.records-statue-btn');
+        const statueToast = document.getElementById('records-statue-toast');
+
+        function showStatueToast(text) {
+            statueToast.textContent = text;
+            statueToast.classList.remove('hidden');
+            statueToast.classList.add('show');
+            clearTimeout(showStatueToast.timerId);
+            showStatueToast.timerId = setTimeout(() => {
+                statueToast.classList.remove('show');
+                statueToast.classList.add('hidden');
+            }, 2200);
+        }
+
+        statueButtons.forEach((button) => {
+            button.addEventListener('click', () => {
+                const quote = button.dataset.quote || 'Цитата будет добавлена позже.';
+                showStatueToast(quote);
+            });
+        });
+    </script>
 </body>
 </html>

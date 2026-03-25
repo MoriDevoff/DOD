@@ -327,8 +327,9 @@ def kras_mode(request):
 # ───────────────────────────────────────────────
 
 def records(request):
-    sfu_records = SfuRecord.objects.order_by('-score')[:10]
-    kras_records = KrasRecord.objects.order_by('-score')[:10]
+    # Все записи — ограничение задаем версткой (скролл внутри таблицы).
+    sfu_records = SfuRecord.objects.order_by('-score')
+    kras_records = KrasRecord.objects.order_by('-score')
 
     return render(request, 'mainpage/records.html', {
         'sfu_records': sfu_records,
@@ -453,3 +454,7 @@ def admin_location_create(request):
             'photo_url': obj.photo.url if obj.photo else None,
         }
     })
+
+
+def authors(request):
+    return render(request, 'mainpage/authors.html')

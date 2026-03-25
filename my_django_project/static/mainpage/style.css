@@ -158,6 +158,16 @@ h1 {
     line-height: 1.5;
 }
 
+.site-footer__authors-link {
+    color: #fff;
+    text-decoration: none;
+    font-weight: 700;
+}
+
+.site-footer__authors-link:hover {
+    text-decoration: underline;
+}
+
 @media (max-width: 520px) {
     .site-footer__copy {
         font-size: 0.85rem;
@@ -173,13 +183,13 @@ body:has(.game-container) .game-container {
 
 /* Страница выбора режима: блок чуть ниже (ближе к центру, чуть выше середины) */
 body.page-play .content.mode-selection {
-    /* ниже центра flex: был -50px (вверх), теперь чуть вниз к середине экрана */
-    margin-top: clamp(24px, 7vh, 72px);
+    /* Опускаем ниже, чтобы больше акцент на карточках режимов */
+    margin-top: clamp(80px, 14vh, 170px);
 }
 
 @media (max-width: 600px) {
     body.page-play .content.mode-selection {
-        margin-top: clamp(16px, 5vh, 48px);
+        margin-top: clamp(70px, 12vh, 120px);
     }
 }
 
@@ -219,6 +229,59 @@ body.page-home .home-extra-button {
 body.page-home .play-button {
     text-transform: none;
 }
+
+/* Home: вращающиеся кубики СФУ */
+.home-cubes {
+    margin-top: 28px;
+    display: flex;
+    gap: 24px;
+    perspective: 1100px;
+}
+
+.cube-wrap {
+    width: 76px;
+    height: 76px;
+    perspective: 1100px;
+}
+
+.cube {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transform-style: preserve-3d;
+    transition: transform 0.75s ease;
+}
+
+.cube-wrap:hover .cube {
+    transform: rotateX(330deg) rotateY(330deg);
+}
+
+.cube-face {
+    position: absolute;
+    width: 76px;
+    height: 76px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.2rem;
+    font-weight: 700;
+    color: #fff;
+    border: 2px solid rgba(255, 255, 255, 0.55);
+    background: rgba(70, 70, 120, 0.55);
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.75);
+    backface-visibility: hidden;
+}
+
+.cube-face--front { transform: translateZ(38px); }
+.cube-face--back { transform: rotateY(180deg) translateZ(38px); }
+.cube-face--right { transform: rotateY(90deg) translateZ(38px); }
+.cube-face--left { transform: rotateY(-90deg) translateZ(38px); }
+.cube-face--top { transform: rotateX(90deg) translateZ(38px); }
+.cube-face--bottom { transform: rotateX(-90deg) translateZ(38px); }
+
+.cube-c .cube-face { background: rgba(236, 24, 24, 0.55); }
+.cube-f .cube-face { background: rgba(14, 165, 47, 0.55); }
+.cube-u .cube-face { background: rgba(34, 10, 252, 0.76); }
 
 /* Кнопки-режимы на странице play: иконка сверху + текст */
 body.page-play .mode-buttons {
@@ -422,6 +485,32 @@ body.page-play .play-mode-label {
     transition: transform 0.2s ease, opacity 0.2s ease;
 }
 
+.play-frog-zone {
+    width: 100%;
+    margin: 0 0 22px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+}
+
+.frog-btn--inline {
+    position: static;
+    right: auto;
+    bottom: auto;
+    padding: 8px;
+}
+
+.frog-btn--inline img {
+    width: clamp(110px, 11vw, 150px);
+}
+
+.frog-toast--inline {
+    position: static;
+    right: auto;
+    bottom: auto;
+}
+
 .frog-btn img {
     display: block;
     width: clamp(150px, 18vw, 230px);
@@ -532,6 +621,133 @@ body.page-howto .background-slider {
     transform: scale(1.05);
 }
 
+.howto-shell {
+    position: relative;
+    width: 100%;
+}
+
+.howto-frog-btn {
+    position: fixed;
+    z-index: 6;
+    border: 2px solid rgba(255, 255, 255, 0.75);
+    border-radius: 14px;
+    padding: 6px;
+    background: linear-gradient(135deg, rgba(58, 79, 42, 0.42), rgba(122, 154, 86, 0.42));
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.42);
+    cursor: pointer;
+}
+
+.howto-frog-btn img {
+    display: block;
+    width: clamp(74px, 9vw, 110px);
+    border-radius: 10px;
+}
+
+.howto-frog-btn:disabled {
+    cursor: default;
+    opacity: 0.92;
+}
+
+.howto-frog-btn--l1 { left: 28px; top: 200px; transform: rotate(-9deg); }
+.howto-frog-btn--l2 { left: 56px; top: 470px; transform: rotate(7deg); }
+.howto-frog-btn--r1 { right: 36px; top: 240px; transform: rotate(8deg); }
+.howto-frog-btn--r2 { right: 60px; top: 520px; transform: rotate(-6deg); }
+
+.howto-frog-toast {
+    position: fixed;
+    right: 24px;
+    bottom: calc(var(--site-footer-height) + 46px);
+    z-index: 12;
+    background: rgba(0, 0, 0, 0.78);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    color: #fff;
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    letter-spacing: 0.02em;
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity 0.25s ease, transform 0.25s ease;
+    pointer-events: none;
+}
+
+.howto-frog-toast.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.howto-frog-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 15;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.62);
+}
+
+.howto-frog-modal.hidden {
+    display: none;
+}
+
+.howto-frog-modal__card {
+    width: min(560px, calc(100% - 24px));
+    background: rgba(0, 0, 0, 0.88);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 12px;
+    padding: 24px 18px;
+}
+
+.howto-frog-modal__card p {
+    margin: 0 0 16px;
+    font-size: 1.15rem;
+}
+
+.howto-frog-modal__btn {
+    text-transform: none;
+    border-radius: 8px;
+    padding: 10px 24px;
+}
+
+.howto-floating-text {
+    position: fixed;
+    top: 40%;
+    left: -60vw;
+    z-index: 7;
+    pointer-events: none;
+    font-size: clamp(2rem, 8vw, 6.5rem);
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    color: rgba(255, 255, 255, 0.22);
+    text-shadow: 0 4px 16px rgba(0, 0, 0, 0.6);
+    white-space: nowrap;
+}
+
+.howto-floating-text.hidden {
+    display: none;
+}
+
+.howto-floating-text.run {
+    animation: howtoFloatAcross 5.6s linear infinite;
+}
+
+@keyframes howtoFloatAcross {
+    0% {
+        transform: translateX(0) rotate(-5deg);
+        opacity: 0;
+    }
+    10% {
+        opacity: 1;
+    }
+    90% {
+        opacity: 1;
+    }
+    100% {
+        transform: translateX(180vw) rotate(-5deg);
+        opacity: 0;
+    }
+}
+
 @media (max-width: 600px) {
     .how-to-play-btn {
         left: 12px;
@@ -562,5 +778,220 @@ body.page-howto .background-slider {
 
     .howto-card {
         padding: 14px;
+    }
+
+    .home-cubes {
+        gap: 14px;
+    }
+
+    .cube-wrap,
+    .cube-face {
+        width: 58px;
+        height: 58px;
+    }
+
+    .cube-face {
+        font-size: 1.7rem;
+    }
+
+    .cube-face--front { transform: translateZ(29px); }
+    .cube-face--back { transform: rotateY(180deg) translateZ(29px); }
+    .cube-face--right { transform: rotateY(90deg) translateZ(29px); }
+    .cube-face--left { transform: rotateY(-90deg) translateZ(29px); }
+    .cube-face--top { transform: rotateX(90deg) translateZ(29px); }
+    .cube-face--bottom { transform: rotateX(-90deg) translateZ(29px); }
+
+    .howto-frog-btn img {
+        width: clamp(58px, 12vw, 74px);
+    }
+
+    .howto-frog-btn--l1 { left: 8px; top: 176px; }
+    .howto-frog-btn--l2 { left: 8px; top: 390px; }
+    .howto-frog-btn--r1 { right: 8px; top: 210px; }
+    .howto-frog-btn--r2 { right: 8px; top: 430px; }
+}
+
+/* Страница рекордов: боковые статуи */
+body.page-records {
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.records-layout {
+    z-index: 2;
+    position: relative;
+    width: min(1880px, calc(100% - 24px));
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: minmax(220px, 1fr) minmax(720px, 1160px) minmax(220px, 1fr);
+    gap: 18px;
+    align-items: center;
+}
+
+.records-statue-btn {
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 14px;
+    padding: 8px;
+    background: rgba(0, 0, 0, 0.55);
+    cursor: pointer;
+}
+
+.records-statue-btn img {
+    width: 100%;
+    max-width: 560px;
+    aspect-ratio: 2 / 3;
+    object-fit: cover;
+    border-radius: 10px;
+    display: block;
+}
+
+.records-statue-toast {
+    position: fixed;
+    left: 50%;
+    transform: translateX(-50%) translateY(8px);
+    bottom: calc(var(--site-footer-height) + 22px);
+    z-index: 12;
+    background: rgba(0, 0, 0, 0.82);
+    border: 1px solid rgba(255, 255, 255, 0.28);
+    color: #fff;
+    padding: 8px 14px;
+    border-radius: 8px;
+    opacity: 0;
+    transition: opacity 0.25s ease, transform 0.25s ease;
+    pointer-events: none;
+}
+
+.records-statue-toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+
+@media (max-width: 1320px) {
+    .records-layout {
+        grid-template-columns: 1fr;
+        width: min(1160px, calc(100% - 16px));
+        gap: 12px;
+    }
+
+    .records-statue-btn {
+        width: min(560px, 100%);
+        justify-self: center;
+    }
+}
+
+/* Страница авторов */
+body.page-authors {
+    overflow-y: auto;
+    overflow-x: hidden;
+    align-items: stretch;
+}
+
+body.page-authors .background-slider {
+    position: fixed;
+}
+
+.authors-page {
+    z-index: 2;
+    width: min(1100px, calc(100% - 48px));
+    margin: 120px auto calc(var(--site-footer-height) + 48px);
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.authors-page h1 {
+    margin: 0 0 16px;
+    font-size: clamp(2.1rem, 5vw, 3.3rem);
+}
+
+.authors-card {
+    display: block;
+    padding: 20px;
+    background: rgba(128, 128, 128, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 12px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.45);
+}
+
+.authors-text {
+    text-align: left;
+}
+
+.authors-text h2 {
+    margin: 0 0 10px;
+    font-size: 1.55rem;
+}
+
+.authors-text p {
+    margin: 0;
+    font-size: 1.1rem;
+    line-height: 1.55;
+}
+
+.authors-sources-btn {
+    position: fixed;
+    right: 20px;
+    bottom: calc(var(--site-footer-height) + 18px);
+    z-index: 11;
+    border-radius: 8px;
+    text-transform: none;
+    padding: 10px 26px;
+    background-color: #5e7bdb;
+}
+
+.authors-sources-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 16;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.64);
+}
+
+.authors-sources-modal.hidden {
+    display: none;
+}
+
+.authors-sources-modal__card {
+    width: min(640px, calc(100% - 26px));
+    background: rgba(0, 0, 0, 0.9);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 12px;
+    padding: 22px 18px;
+}
+
+.authors-sources-modal__card h2 {
+    margin: 0 0 12px;
+    font-size: 1.7rem;
+}
+
+.authors-sources-modal__card p {
+    margin: 0 0 16px;
+    line-height: 1.5;
+}
+
+.authors-sources-modal__btn {
+    text-transform: none;
+    border-radius: 8px;
+    padding: 10px 24px;
+}
+
+@media (max-width: 600px) {
+    .authors-page {
+        width: calc(100% - 20px);
+        margin-top: 100px;
+        margin-bottom: calc(var(--site-footer-height) + 24px);
+        gap: 14px;
+    }
+
+    .authors-card {
+        padding: 14px;
+    }
+
+    .authors-sources-btn {
+        right: 12px;
+        bottom: calc(var(--site-footer-height) + 12px);
+        padding: 8px 16px;
     }
 }

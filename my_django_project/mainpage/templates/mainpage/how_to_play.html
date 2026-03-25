@@ -13,41 +13,113 @@
     {% include 'mainpage/_institute_logo.html' %}
     <div class="background-slider"></div>
 
-    <main class="howto-page">
-        <h1>Как играть</h1>
+    <div class="howto-shell">
+        <button class="howto-frog-btn howto-frog-btn--l1" type="button" data-frog-id="l1" aria-label="Жабка слева сверху">
+            <img src="{% static 'mainpage/frog1.png' %}" data-frog2="{% static 'mainpage/frog2.png' %}" alt="Жабка">
+        </button>
+        <button class="howto-frog-btn howto-frog-btn--l2" type="button" data-frog-id="l2" aria-label="Жабка слева снизу">
+            <img src="{% static 'mainpage/frog1.png' %}" data-frog2="{% static 'mainpage/frog2.png' %}" alt="Жабка">
+        </button>
+        <button class="howto-frog-btn howto-frog-btn--r1" type="button" data-frog-id="r1" aria-label="Жабка справа сверху">
+            <img src="{% static 'mainpage/frog1.png' %}" data-frog2="{% static 'mainpage/frog2.png' %}" alt="Жабка">
+        </button>
+        <button class="howto-frog-btn howto-frog-btn--r2" type="button" data-frog-id="r2" aria-label="Жабка справа снизу">
+            <img src="{% static 'mainpage/frog1.png' %}" data-frog2="{% static 'mainpage/frog2.png' %}" alt="Жабка">
+        </button>
 
-        <section class="howto-card">
-            <div class="howto-text">
-                <h2>Шаг 1. Выберите режим</h2>
-                <p>На странице выбора режима нажмите «СФУ» или «Красноярск».</p>
-            </div>
-        </section>
+        <main class="howto-page">
+            <h1>Как играть</h1>
 
-        <section class="howto-card">
-            <div class="howto-text">
-                <h2>Шаг 2. Отметьте место на карте</h2>
-                <p>Смотрите фотографию и кликом ставьте маркер на карте.</p>
-            </div>
-        </section>
+            <section class="howto-card">
+                <div class="howto-text">
+                    <h2>Шаг 1. Выберите режим</h2>
+                    <p>На странице выбора режима нажмите «СФУ» или «Красноярск».</p>
+                </div>
+            </section>
 
-        <section class="howto-card">
-            <div class="howto-text">
-                <h2>Шаг 3. Подтвердите выбор и получите очки</h2>
-                <p>Нажмите «Подтвердить выбор». Чем ближе к правильной точке, тем больше очков (максимум 5000).</p>
-                <p>Для получения максимального количества очков есть опредлённый радиус от правильной точки. Для СФУ это 10 метров, для Красноярска 50 метров.</p>
-            </div>
-        </section>
+            <section class="howto-card">
+                <div class="howto-text">
+                    <h2>Шаг 2. Отметьте место на карте</h2>
+                    <p>Смотрите фотографию и кликом ставьте маркер на карте.</p>
+                </div>
+            </section>
 
-        <section class="howto-card">
-            <div class="howto-text">
-                <h2>Шаг 4. Пройдите 5 раундов</h2>
-                <p>После последнего раунда введите имя, сохраните результат и проверьте себя в таблице рекордов.</p>
-            </div>
-        </section>
-    </main>
+            <section class="howto-card">
+                <div class="howto-text">
+                    <h2>Шаг 3. Подтвердите выбор и получите очки</h2>
+                    <p>Нажмите «Подтвердить выбор». Чем ближе к правильной точке, тем больше очков (максимум 5000).</p>
+                    <p>Для получения максимального количества очков есть опредлённый радиус от правильной точки. Для СФУ это 10 метров, для Красноярска 50 метров.</p>
+                </div>
+            </section>
+
+            <section class="howto-card">
+                <div class="howto-text">
+                    <h2>Шаг 4. Пройдите 5 раундов</h2>
+                    <p>После последнего раунда введите имя, сохраните результат и проверьте себя в таблице рекордов.</p>
+                </div>
+            </section>
+        </main>
+    </div>
 
     <a href="{% url 'home' %}" class="mode-button howto-back-btn">Назад</a>
+    <div id="howto-frog-toast" class="howto-frog-toast hidden">Вы уронили жабку</div>
+    <div id="howto-frog-modal" class="howto-frog-modal hidden" role="dialog" aria-modal="true">
+        <div class="howto-frog-modal__card">
+            <p>Вы уронили всех жабок, можете собой гордиться...</p>
+            <button id="howto-frog-modal-close" class="mode-button howto-frog-modal__btn" type="button">Закрыть</button>
+        </div>
+    </div>
+    <div id="howto-floating-text" class="howto-floating-text hidden" aria-hidden="true">
+        ЗАЧЕМ?
+    </div>
+
     {% include 'mainpage/_site_footer.html' %}
     <script src="{% static 'mainpage/script.js' %}"></script>
+    <script>
+        const howtoFrogButtons = Array.from(document.querySelectorAll('.howto-frog-btn'));
+        const howtoFrogToast = document.getElementById('howto-frog-toast');
+        const howtoFrogModal = document.getElementById('howto-frog-modal');
+        const howtoFrogModalClose = document.getElementById('howto-frog-modal-close');
+        let droppedFrogs = 0;
+
+        function showHowtoToast(text) {
+            howtoFrogToast.textContent = text;
+            howtoFrogToast.classList.remove('hidden');
+            howtoFrogToast.classList.add('show');
+            clearTimeout(showHowtoToast.timerId);
+            showHowtoToast.timerId = setTimeout(() => {
+                howtoFrogToast.classList.remove('show');
+                howtoFrogToast.classList.add('hidden');
+            }, 1800);
+        }
+
+        howtoFrogButtons.forEach((button) => {
+            const img = button.querySelector('img');
+            const preload = new Image();
+            preload.src = img.dataset.frog2;
+
+            button.addEventListener('click', () => {
+                if (button.disabled) return;
+                img.src = img.dataset.frog2;
+                button.disabled = true;
+                button.classList.add('dropped');
+                droppedFrogs += 1;
+                showHowtoToast('Вы уронили жабку');
+
+                if (droppedFrogs === howtoFrogButtons.length) {
+                    howtoFrogModal.classList.remove('hidden');
+                    const floatingText = document.getElementById('howto-floating-text');
+                    floatingText.classList.remove('hidden');
+                    floatingText.classList.remove('run');
+                    void floatingText.offsetWidth;
+                    floatingText.classList.add('run');
+                }
+            });
+        });
+
+        howtoFrogModalClose.addEventListener('click', () => {
+            howtoFrogModal.classList.add('hidden');
+        });
+    </script>
 </body>
 </html>

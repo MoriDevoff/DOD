@@ -34,6 +34,21 @@
             </button>
         </div>
 
+        <div class="play-frog-zone">
+            <button id="frog-btn" class="frog-btn frog-btn--inline" type="button" aria-label="Жабка">
+                <img
+                    id="frog-img"
+                    src="{% static 'mainpage/frog1.png' %}"
+                    data-frog2="{% static 'mainpage/frog2.png' %}"
+                    alt="Жабка"
+                    loading="eager"
+                    fetchpriority="high"
+                    decoding="async"
+                >
+            </button>
+            <div id="frog-toast" class="frog-toast frog-toast--inline hidden">Вы уронили жабку</div>
+        </div>
+
         <!-- Сообщение с пасхалкой после 10 нажатий -->
         <div class="messages-container">
             <div id="final-message" class="message final-message hidden">
@@ -43,21 +58,7 @@
     </div>
 
     {% include 'mainpage/_site_footer.html' %}
-    <button id="frog-btn" class="frog-btn" type="button" aria-label="Жабка">
-        <img
-            id="frog-img"
-            src="{% static 'mainpage/frog1.png' %}"
-            data-frog2="{% static 'mainpage/frog2.png' %}"
-            alt="Жабка"
-            loading="eager"
-            fetchpriority="high"
-            decoding="async"
-        >
-    </button>
-
-    <div id="frog-toast" class="frog-toast hidden">Вы уронили жабку</div>
-
-    <a href="{% url 'home' %}" class="mode-button play-back-home-btn">Назад</a>
+    <a href="{% url 'home' %}" class="mode-button howto-back-btn">Назад</a>
 
     <script src="{% static 'mainpage/script.js' %}"></script>
 

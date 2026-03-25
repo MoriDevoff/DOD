@@ -1,0 +1,83 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Авторы</title>
+    <link rel="stylesheet" href="{% static 'mainpage/style.css' %}">
+    <link href="https://fonts.googleapis.com/css2?family=Exo+2:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+</head>
+<body class="page-authors">
+    {% include 'mainpage/_institute_logo.html' %}
+
+    <div class="background-slider"></div>
+
+    <main class="authors-page">
+        <h1>Авторы</h1>
+
+        <section class="authors-card">
+            <div class="authors-text">
+                <h2>Команда разработчиков:</h2>
+                <p>BackEnd: Сурин Никита</p>
+                <p>FrontEnd: Захаров Владислав</p>
+                <p>Тестировкщик: Павленко Артур</p>
+            </div>
+        </section>
+
+        <section class="authors-card">
+            <div class="authors-text">
+                <h2>Так-же в работе над проектом принимали участие:</h2>
+                <p>-</p>
+                <p>-</p>
+                <p>Главный редактор/критик: Красноборов Евгений</p>
+                <p>Душа компании: Семёнов Кирилл</p>
+            </div>
+        </section>
+
+        <section class="authors-card">
+            <div class="authors-text">
+                <h2>Научные руководитель:</h2>
+                <p>Заведующий кафедры: Гостева Анна Александровна</p>
+                <p>Преподаватель по ГИС: Тамаровская Анастасия Николаевна</p>
+            </div>
+        </section>
+
+        <section class="authors-card">
+            <div class="authors-text">
+                <h2>По всем вопросом пишите в Telegram: @MoriBTW</h2>
+            </div>
+        </section>
+    </main>
+
+    <button id="authors-sources-btn" class="mode-button authors-sources-btn" type="button">Источники</button>
+    <a href="{% url 'home' %}" class="mode-button howto-back-btn">Назад</a>
+    <div id="authors-sources-modal" class="authors-sources-modal hidden" role="dialog" aria-modal="true">
+        <div class="authors-sources-modal__card">
+            <h2>Источники</h2>
+            <p>Милы жабки, которых вы так любит ронять были взяты из стикер пака Froggy в телеграмме, Автор - @acheloiys.</p>
+            <p></p>
+            <button id="authors-sources-close" class="mode-button authors-sources-modal__btn" type="button">Закрыть</button>
+        </div>
+    </div>
+
+    {% include 'mainpage/_site_footer.html' %}
+
+    <script src="{% static 'mainpage/script.js' %}"></script>
+    <script>
+        const sourcesBtn = document.getElementById('authors-sources-btn');
+        const sourcesModal = document.getElementById('authors-sources-modal');
+        const sourcesClose = document.getElementById('authors-sources-close');
+
+        sourcesBtn.addEventListener('click', () => {
+            sourcesModal.classList.remove('hidden');
+        });
+
+        sourcesClose.addEventListener('click', () => {
+            sourcesModal.classList.add('hidden');
+        });
+    </script>
+</body>
+</html>
+
