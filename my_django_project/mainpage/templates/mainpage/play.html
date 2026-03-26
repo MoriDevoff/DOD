@@ -46,7 +46,7 @@
                     decoding="async"
                 >
             </button>
-            <div id="frog-toast" class="frog-toast frog-toast--inline hidden">Вы уронили жабку</div>
+            <div id="frog-toast" class="frog-toast frog-toast--play hidden">Вы уронили жабку</div>
         </div>
 
         <!-- Сообщение с пасхалкой после 10 нажатий -->
@@ -59,6 +59,12 @@
 
     {% include 'mainpage/_site_footer.html' %}
     <a href="{% url 'home' %}" class="mode-button howto-back-btn">Назад</a>
+
+    <div id="snake-band" class="snake-band" role="button" tabindex="0" aria-label="Змейка. Нажмите, чтобы появилось яблочко.">
+        <div id="snake-head" class="snake-part snake-head-part" aria-hidden="true"></div>
+        <div id="snake-body" class="snake-body" aria-hidden="true"></div>
+        <div id="snake-apple" class="snake-apple hidden" aria-hidden="true">🍎</div>
+    </div>
 
     <script src="{% static 'mainpage/script.js' %}"></script>
 
@@ -82,21 +88,27 @@
             frog2Preload.src = frogImg.dataset.frog2;
         });
 
+        const brokenMessages = [
+            'Хм... снова мимо',
+            'Кажется, это не сработает',
+            'Упс, снова нет',
+            'Неужели никак?',
+            'Скорее всего, баг...',
+            'Жмём, но всё равно нет',
+            'Почти... и снова нет',
+            'Ладно, хватит пробовать',
+            'Ладно, правда хватит',
+            'Хватит нажимать',
+        ];
+
         btn.addEventListener('click', function() {
             if (btn.disabled) return;
-            clickCount++;
 
-            if (clickCount < MAX_CLICKS) {
-                if (clickCount === 1) {
-                    btnLabel.textContent = 'Не работает';
-                } else if (clickCount <= 6) {
-                    btnLabel.textContent = 'всё ещё не работает';
-                } else {
-                    btnLabel.textContent = 'Хватит нажимать';
-                }
-            } else {
+            clickCount = Math.min(clickCount + 1, MAX_CLICKS);
+            btnLabel.textContent = brokenMessages[clickCount - 1] || 'Не работает';
+
+            if (clickCount >= MAX_CLICKS) {
                 // 10-е нажатие: показываем пасхалку
-                btnLabel.textContent = 'Хватит нажимать';
                 finalMsg.classList.remove('hidden');
                 finalMsg.style.display = 'block';
 
@@ -121,6 +133,115 @@
                 frogToast.classList.add('hidden');
             }, 2000);
         });
+
+        // Бесконечная "змейка" (голова/тело/хвост) + яблочко
+        const snakeBand = document.getElementById('snake-band');
+        const snakeHead = document.getElementById('snake-head');
+        const snakeBody = document.getElementById('snake-body');
+        const appleEl = document.getElementById('snake-apple');
+        if (snakeBand && snakeHead && snakeBody && appleEl) {
+            let bandWidth = 0;
+            // Размер блока тела 20px + зазор 2px = 22px между центрами
+            const segmentSpacing = 22; // расстояние между центрами частей
+            const snakeSpeed = 260; // px/sec
+            const eatDistance = 16; // px
+
+            let snakeX = 0; // центр головы
+            let appleActive = false;
+            let appleX = 0;
+
+            const bodySegs = [];
+
+            const addBodySegment = () => {
+                const seg = document.createElement('div');
+                // `snake-part` фиксирует сегмент на одной линии (top: 50%), иначе они могут складываться вниз/вверх
+                seg.className = 'snake-part snake-body-seg';
+                snakeBody.appendChild(seg);
+                bodySegs.push(seg);
+                syncTailStyle();
+            };
+
+            const syncTailStyle = () => {
+                bodySegs.forEach((seg, i) => {
+                    if (i === bodySegs.length - 1) {
+                        seg.classList.add('snake-body-seg--tail');
+                    } else {
+                        seg.classList.remove('snake-body-seg--tail');
+                    }
+                });
+            };
+
+            const updateBandWidth = () => {
+                bandWidth = snakeBand.getBoundingClientRect().width;
+            };
+            updateBandWidth();
+
+            window.addEventListener('resize', updateBandWidth);
+
+            const setApple = (x) => {
+                appleActive = true;
+                appleX = x;
+                appleEl.classList.remove('hidden');
+                appleEl.style.transform = `translate(-50%, -50%) translateX(${appleX}px)`;
+            };
+
+            snakeBand.addEventListener('click', (e) => {
+                // если яблоко уже есть — игнорируем
+                if (appleActive) return;
+                const rect = snakeBand.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+
+                // не спавним совсем у краёв
+                if (x < 12 || x > rect.width - 12) return;
+                setApple(x);
+            });
+
+            // начальная длина: голова + 2 элемента тела (последний = хвост)
+            addBodySegment();
+            addBodySegment();
+
+            let lastTs = null;
+            const loop = (ts) => {
+                if (lastTs === null) lastTs = ts;
+                const dt = (ts - lastTs) / 1000;
+                lastTs = ts;
+
+                const snakeLen = segmentSpacing * (bodySegs.length + 1); // голова + тело до хвоста
+                snakeX += snakeSpeed * dt;
+                if (snakeX > bandWidth + snakeLen) snakeX = -snakeLen;
+
+                // голова
+                snakeHead.style.transform = `translate(-50%, -50%) translateX(${snakeX}px)`;
+
+                // тело (i=0 ближе к голове)
+                for (let i = 0; i < bodySegs.length; i++) {
+                    const x = snakeX - (i + 1) * segmentSpacing;
+                    const isTail = i === bodySegs.length - 1;
+                    bodySegs[i].style.transform = `translate(-50%, -50%) translateX(${x}px)`;
+                }
+
+                // "съедание" яблока
+                if (appleActive) {
+                    if (Math.abs(snakeX - appleX) <= eatDistance) {
+                        appleActive = false;
+                        appleEl.classList.add('hidden');
+
+                        // лёгкая "подсветка" головы
+                        snakeHead.style.filter = 'drop-shadow(0 0 14px rgba(255, 50, 50, 0.95))';
+                        setTimeout(() => {
+                            snakeHead.style.filter = '';
+                        }, 260);
+
+                        // +1 элемент туловища
+                        addBodySegment();
+                    }
+                }
+
+                requestAnimationFrame(loop);
+            };
+
+            requestAnimationFrame(loop);
+        }
     </script>
 </body>
 </html>
