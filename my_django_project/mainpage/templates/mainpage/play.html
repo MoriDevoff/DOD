@@ -20,11 +20,11 @@
         <h1>Выберите режим</h1>
 
         <div class="mode-buttons">
-            <a href="{% url 'sfu_mode' %}" class="mode-button play-mode-button">
+            <a href="{% url 'start_game' 'sfu' %}" class="mode-button play-mode-button">
                 <img class="play-mode-icon" src="{% static 'mainpage/SFUplay.png' %}" alt="SFU">
                 <span class="play-mode-label">СФУ</span>
             </a>
-            <a href="{% url 'kras_mode' %}" class="mode-button play-mode-button">
+            <a href="{% url 'start_game' 'kras' %}" class="mode-button play-mode-button">
                 <img class="play-mode-icon" src="{% static 'mainpage/KRASplay.png' %}" alt="KRAS">
                 <span class="play-mode-label">Красноярск</span>
             </a>
@@ -67,6 +67,12 @@
     </div>
 
     <script src="{% static 'mainpage/script.js' %}"></script>
+
+    <script>
+        // Сброс клиентского состояния при выборе режима — иначе подтягивается старая игра из localStorage.
+        localStorage.removeItem('whereiam-sfu-state');
+        localStorage.removeItem('whereiam-kras-state');
+    </script>
 
     <script>
         let clickCount = 0;

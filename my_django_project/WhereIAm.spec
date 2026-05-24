@@ -1,12 +1,39 @@
 # -*- mode: python ; coding: utf-8 -*-
+# Сборка: py -3.14 -m PyInstaller WhereIAm.spec  (или build_onefile.bat)
 
+from pathlib import Path
+
+block_cipher = None
+root = Path(SPECPATH)
+
+datas = [
+    (str(root / 'static'), 'static'),
+    (str(root / 'media'), 'media'),
+    (str(root / 'db.sqlite3'), '.'),
+    (str(root / 'mainpage' / 'templates'), 'templates'),
+    (str(root / 'mainpage' / 'migrations'), 'mainpage/migrations'),
+    (str(root / 'mainpage' / 'fixtures'), 'mainpage/fixtures'),
+]
+
+hiddenimports = [
+    'django.contrib.admin',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.messages',
+    'django.contrib.staticfiles',
+    'django.template.loaders.filesystem',
+    'django.template.loaders.app_directories',
+    'mainpage',
+    'mysite',
+]
 
 a = Analysis(
     ['launcher.py'],
-    pathex=[],
+    pathex=[str(root)],
     binaries=[],
-    datas=[('static', 'static'), ('media', 'media'), ('db.sqlite3', '.'), ('mainpage\\templates', 'templates')],
-    hiddenimports=[],
+    datas=datas,
+    hiddenimports=hiddenimports,
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],

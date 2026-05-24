@@ -12,6 +12,7 @@ urlpatterns = [
     path('play/kras/', views.kras_mode, name='kras_mode'),
     path('play/records/', views.records, name='records'),
     path('play/reset/<str:mode>/', views.reset_game, name='reset_game'),
+    path('play/start/<str:mode>/', views.start_game, name='start_game'),
     path('locations/', views.locations_dashboard, name='location_dashboard'),
     path('locations/add/', views.location_create, name='location_create'),
     path('locations/<str:location_type>/<int:pk>/edit/', views.location_edit, name='location_edit'),

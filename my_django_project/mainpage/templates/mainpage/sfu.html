@@ -231,6 +231,7 @@
     <script>
         const CSRF_TOKEN = '{{ csrf_token }}';
         const CURRENT_ROUND = {{ current_round|default:1 }};
+        const GAME_TOKEN = '{{ game_token|escapejs }}';
         const GAME_STATE_KEY = 'whereiam-sfu-state';
 
         // Стартовый обзор: студгородок + основной кампус СФУ
@@ -359,6 +360,11 @@
             try {
                 const state = JSON.parse(rawState);
 
+                if (!GAME_TOKEN || state.game_token !== GAME_TOKEN) {
+                    clearGameState();
+                    return;
+                }
+
                 if (state.round !== CURRENT_ROUND) {
                     clearGameState();
                     return;
@@ -463,6 +469,7 @@
                     ], {padding: [50, 50]});
 
                     saveGameState({
+                        game_token: GAME_TOKEN,
                         round: CURRENT_ROUND,
                         confirmed: true,
                         is_last_round: data.is_last_round,

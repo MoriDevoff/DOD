@@ -48,7 +48,9 @@ py -3 -m PyInstaller ^
   launcher.py
 ```
 
-Для сборки в один клик используйте [build_onefile.bat](build_onefile.bat).
+Для сборки в один клик из корня репозитория: **`Собрать_exe.bat`** или [build_onefile.bat](build_onefile.bat).
+
+Готовый файл для пользователей копируется в **`release/WhereIAm.exe`** (в git не коммитится).
 
 ## 5. Команда сборки через PyInstaller
 

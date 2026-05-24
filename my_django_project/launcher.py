@@ -1,23 +1,67 @@
-import os
+#!/usr/bin/env python3.14
+"""
+Единая точка запуска проекта «Где я?».
+Двойной клик по Запуск.bat (в корне репозитория) или: py launcher.py
+"""
+from __future__ import annotations
+
 import io
+import os
+import shutil
 import socket
+import subprocess
 import sys
 import threading
 import time
-import shutil
 import webbrowser
 from pathlib import Path
-
 
 HOST = '127.0.0.1'
 PORT = 8000
 URL = f'http://{HOST}:{PORT}'
+FIXTURE_PATH = 'mainpage/fixtures/initial_locations.json'
+
+
+def ensure_stdio() -> None:
+    """PyInstaller с --noconsole: stdout/stderr = None, Django падает на .write()."""
+    for name in ('stdout', 'stderr'):
+        stream = getattr(sys, name, None)
+        if stream is None or not callable(getattr(stream, 'write', None)):
+            setattr(
+                sys,
+                name,
+                open(os.devnull, 'w', encoding='utf-8', errors='replace'),
+            )
+
+
+def safe_print(*args, **kwargs) -> None:
+    ensure_stdio()
+    try:
+        print(*args, **kwargs)
+    except (AttributeError, OSError):
+        pass
 
 
 def project_root() -> Path:
     if getattr(sys, 'frozen', False):
         return Path(sys.executable).resolve().parent
     return Path(__file__).resolve().parent
+
+
+def show_error(message: str) -> None:
+    safe_print(message, file=sys.stderr)
+    if sys.platform == 'win32':
+        try:
+            import ctypes
+            ctypes.windll.user32.MessageBoxW(0, message, 'Где я? — ошибка запуска', 0x10)
+        except Exception:
+            pass
+
+
+def write_error_log(root: Path, error: BaseException) -> None:
+    log_path = root / 'launcher_error.log'
+    with log_path.open('a', encoding='utf-8') as log_file:
+        log_file.write(f'{time.strftime("%Y-%m-%d %H:%M:%S")} - {error!r}\n')
 
 
 def ensure_runtime_paths(root: Path) -> None:
@@ -59,7 +103,28 @@ def seed_media(root: Path) -> None:
         copy_tree_if_missing(bundled_media, media_root)
 
 
-def wait_for_server(host: str, port: int, timeout: float = 30.0) -> bool:
+def ensure_dependencies(root: Path) -> None:
+    if getattr(sys, 'frozen', False):
+        return
+
+    try:
+        import django  # noqa: F401
+        return
+    except ImportError:
+        pass
+
+    requirements = root / 'requirements.txt'
+    if not requirements.exists():
+        raise RuntimeError(f'Не найден файл зависимостей: {requirements}')
+
+    safe_print('Устанавливаю зависимости (Django, Pillow)...')
+    subprocess.check_call(
+        [sys.executable, '-m', 'pip', 'install', '-r', str(requirements)],
+        cwd=root,
+    )
+
+
+def wait_for_server(host: str, port: int, timeout: float = 60.0) -> bool:
     deadline = time.time() + timeout
     while time.time() < deadline:
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
@@ -77,55 +142,87 @@ def open_browser() -> None:
         pass
 
 
-def show_error(message: str) -> None:
-    try:
-        import ctypes
-        ctypes.windll.user32.MessageBoxW(0, message, 'WhereIAm', 0x10)
-    except Exception:
-        pass
-
-
-def write_error_log(root: Path, error: Exception) -> None:
-    log_path = root / 'launcher_error.log'
-    with log_path.open('a', encoding='utf-8') as log_file:
-        log_file.write(f'{time.strftime("%Y-%m-%d %H:%M:%S")} - {error!r}\n')
-
-
-def run_django_server() -> None:
+def setup_django(root: Path) -> None:
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'mysite.settings')
-
-    root = project_root()
     os.chdir(root)
     if str(root) not in sys.path:
         sys.path.insert(0, str(root))
 
-    try:
-        import django
-        django.setup()
+    import django
+    django.setup()
 
+
+def ensure_database_ready() -> None:
+    from django.core.management import call_command
+    from mainpage.models import KrasLocation, SfuLocation
+
+    frozen = getattr(sys, 'frozen', False)
+    verbosity = 0 if frozen else 1
+    output = io.StringIO()
+    call_command(
+        'migrate',
+        interactive=False,
+        verbosity=verbosity,
+        stdout=output,
+        stderr=output,
+    )
+    printed = output.getvalue().strip()
+    if printed and not frozen:
+        safe_print(printed)
+
+    if SfuLocation.objects.exists() or KrasLocation.objects.exists():
+        return
+
+    fixture = project_root() / FIXTURE_PATH
+    if not fixture.exists():
+        safe_print('Внимание: база пуста, fixture не найден — добавьте локации вручную.')
+        return
+
+    safe_print('Загружаю стартовые локации...')
+    call_command(
+        'loaddata',
+        FIXTURE_PATH,
+        verbosity=verbosity,
+        stdout=output,
+        stderr=output,
+    )
+
+
+def run_django_server() -> None:
+    root = project_root()
+    try:
+        setup_django(root)
         from django.core.management import call_command
 
-        command_output = io.StringIO()
+        ensure_database_ready()
 
-        call_command('migrate', interactive=False, verbosity=0, stdout=command_output, stderr=command_output)
+        frozen = getattr(sys, 'frozen', False)
+        if not frozen:
+            safe_print(f'\nСайт: {URL}\nОстановка: Ctrl+C в этом окне.\n')
 
+        server_output = io.StringIO()
         call_command(
             'runserver',
             f'{HOST}:{PORT}',
             use_reloader=False,
-            verbosity=0,
-            stdout=command_output,
-            stderr=command_output,
+            verbosity=0 if frozen else 1,
+            stdout=server_output,
+            stderr=server_output,
         )
     except Exception as error:
         write_error_log(root, error)
-        show_error(f'Не удалось запустить проект.\n\nПодробнее: {error}')
+        show_error(f'Не удалось запустить проект.\n\n{error}')
         raise
 
 
 def main() -> None:
+    ensure_stdio()
     root = project_root()
     ensure_runtime_paths(root)
+
+    if not getattr(sys, 'frozen', False):
+        ensure_dependencies(root)
+
     seed_database(root)
     seed_media(root)
 
@@ -133,7 +230,10 @@ def main() -> None:
     server_thread.start()
 
     if not wait_for_server(HOST, PORT):
-        show_error(f'Сервер не запустился на {URL}.')
+        show_error(
+            f'Сервер не ответил на {URL}.\n'
+            f'Проверьте launcher_error.log в папке проекта.'
+        )
         return
 
     open_browser()
@@ -141,4 +241,12 @@ def main() -> None:
 
 
 if __name__ == '__main__':
-    main()
+    ensure_stdio()
+    try:
+        main()
+    except KeyboardInterrupt:
+        safe_print('\nСервер остановлен.')
+    except Exception:
+        if not getattr(sys, 'frozen', False):
+            input('\nНажмите Enter, чтобы закрыть окно...')
+        sys.exit(1)

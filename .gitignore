@@ -8,25 +8,32 @@ venv/
 .venv/
 env/
 
-# Django
+# Django (локальная БД — создаётся migrate/loaddata, в exe вшивается при сборке)
+my_django_project/db.sqlite3
+my_django_project/db.sqlite3-journal
+my_django_project/staticfiles/
 *.log
+launcher_error.log
 local_settings.py
-db.sqlite3-journal
 
-# Секреты и окружение
+# PyInstaller (артефакты сборки)
+my_django_project/build/
+my_django_project/dist/
+
+# Готовый exe — не коммитить (выкладывайте через GitHub Releases или ZIP)
+release/WhereIAm.exe
+release/*.zip
+
+# Секреты
 .env
 .env.*
 
-# IDE
+# IDE / OS
 .idea/
 .vscode/
 *.swp
 *~
-
-# OS
-.Django/
 Thumbs.db
 Desktop.ini
 
-# Загружаемые пользователем медиа (при необходимости закоммитьте папку с фото вручную)
-# my_django_project/media/
+# В git ДОЛЖНЫ быть: my_django_project/media/, static/, fixtures/

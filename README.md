@@ -1,10 +1,58 @@
 # Где я? (WhereIAm)
 
-Веб-игра-викторина по угадыванию места на карте: режим **территории СФУ** и режим **Красноярска**.  
-Пользователь смотрит фотографию, отмечает предполагаемое место на карте (Leaflet + OpenStreetMap) и получает очки в зависимости от расстояния до правильной точки. Есть таблица рекордов.
+Веб-игра: угадайте место на карте по фотографии (режимы **СФУ** и **Красноярск**).
 
-**Стек:** [Django](https://www.djangoproject.com/) 6.x, SQLite, шаблоны HTML + CSS + JavaScript.  
-Карта подключается через **Leaflet** и тайлы OSM с CDN (отдельная установка не нужна). Шрифты — **Google Fonts** (по ссылке в шаблонах).
+---
+
+## Для пользователя — без Python
+
+Нужен только один файл **`WhereIAm.exe`**.
+
+1. Скачайте **`WhereIAm.exe`** из [GitHub Releases](https://github.com/ВАШ_ЛОГИН/ИМЯ_РЕПО/releases)  
+   *(или возьмите `release/WhereIAm.exe` после сборки у разработчика)*.
+2. Дважды щёлкните по exe — откроется браузер: **http://127.0.0.1:8000/**
+
+Из репозитория (если exe уже собран): **`Играть_без_Python.bat`**.
+
+> **Интернет** нужен для карты (OpenStreetMap) и шрифтов.
+
+Подробнее: [release/README.txt](release/README.txt).
+
+---
+
+## Для разработчика — запуск из исходников
+
+1. Python **3.12+** с [python.org](https://www.python.org/downloads/).
+2. Дважды щёлкните **`Запуск.bat`** (установит зависимости и откроет сайт).
+
+Или вручную:
+
+```powershell
+cd my_django_project
+py -3.14 launcher.py
+```
+
+---
+
+## Сборка exe (один раз, на вашем ПК)
+
+```powershell
+# из корня репозитория
+.\Собрать_exe.bat
+```
+
+Или: `my_django_project\build_onefile.bat`
+
+Результат:
+
+| Путь | Назначение |
+|------|------------|
+| `release/WhereIAm.exe` | **Отдавать пользователям** (Python не нужен) |
+| `my_django_project/dist/WhereIAm.exe` | Копия после PyInstaller |
+
+Выкладывайте **`WhereIAm.exe`** в **GitHub Releases** (в git exe не коммитится — см. `.gitignore`).
+
+Подробности: [EXE_BUILD_GUIDE.md](my_django_project/EXE_BUILD_GUIDE.md).
 
 ---
 
@@ -12,139 +60,71 @@
 
 | Компонент | Версия |
 |-----------|--------|
-| **Python** | **3.12+** (нужен для Django 6) |
-| pip | актуальный |
-
-Проверка версии Python:
-
-```bash
-python --version
-```
+| Python | **3.12+** (для запуска через `Запуск.bat`) |
+| Django | 6.x (ставится автоматически) |
 
 ---
 
-## Что установить (библиотеки)
-
-Из корня репозитория все зависимости Python перечислены в файле:
-
-**`my_django_project/requirements.txt`**
-
-Сейчас там только **Django** (остальное — стандартная библиотека Python и фронтенд по CDN).
-
-Установка в виртуальное окружение (рекомендуется):
-
-```bash
-# Windows (PowerShell / cmd)
-cd путь\к\WhereIAm
-python -m venv venv
-venv\Scripts\activate
-pip install --upgrade pip
-pip install -r my_django_project/requirements.txt
-```
-
-```bash
-# Linux / macOS
-cd /path/to/WhereIAm
-python3 -m venv venv
-source venv/bin/activate
-pip install --upgrade pip
-pip install -r my_django_project/requirements.txt
-```
-
-**Отдельно скачивать Leaflet/npm не нужно** — он подключается из шаблонов (`unpkg.com`). Для работы нужен доступ в интернет при открытии страниц с картой и шрифтами.
-
----
-
-## Как запустить локально
-
-1. Активируй виртуальное окружение (см. выше).
-
-2. Перейди в каталог проекта Django:
-
-   ```bash
-   cd my_django_project
-   ```
-
-3. Примени миграции (создастся `db.sqlite3`):
-
-   ```bash
-   python manage.py migrate
-   ```
-
-4. Загрузи стартовые локации (фото + координаты) из fixture:
-
-   ```bash
-   python manage.py loaddata mainpage/fixtures/initial_locations.json
-   ```
-
-   > Почему это важно: файл `db.sqlite3` обычно не хранится в Git, поэтому после клона база пустая, пока не выполнен `loaddata`.
-
-5. Убедись, что в репозитории есть каталог `my_django_project/media/` с файлами фото локаций (пути к этим фото лежат в fixture).
-
-6. (Опционально) Создай суперпользователя для входа в админку:
-
-   ```bash
-   python manage.py createsuperuser
-   ```
-
-7. Запусти сервер разработки:
-
-   ```bash
-   python manage.py runserver
-   ```
-
-8. Открой в браузере: **http://127.0.0.1:8000/**
-
-Админка Django: **http://127.0.0.1:8000/admin/** (если создавал `createsuperuser`).
-
----
-
-## Структура репозитория (кратко)
+## Структура репозитория
 
 ```
 WhereIAm/
+├── Играть_без_Python.bat      ← запуск собранного exe
+├── Собрать_exe.bat            ← сборка exe (нужен Python)
+├── Запуск.bat                 ← запуск из исходников
+├── release/
+│   ├── README.txt
+│   └── WhereIAm.exe           ← после сборки (в git не хранится)
 ├── README.md
-├── .gitignore
 └── my_django_project/
+    ├── launcher.py            ← логика автозапуска
     ├── manage.py
     ├── requirements.txt
-    ├── mysite/              # настройки проекта Django
-    ├── mainpage/            # приложение: модели, вьюхи, шаблоны
-    ├── static/mainpage/     # CSS, JS, фоновые картинки, логотип
-    └── media/               # загружаемые фото локаций (если используются)
+    ├── mysite/
+    ├── mainpage/
+    ├── static/mainpage/
+    └── media/                 ← фото локаций (должны быть в репозитории)
 ```
+
+После клона убедитесь, что в репозитории есть папка **`my_django_project/media/`** с фотографиями — иначе игра запустится, но картинки не отобразятся.
+
+---
+
+## Полезные команды (разработка)
+
+Выполнять из `my_django_project` с активированным venv (по желанию):
+
+| Команда | Назначение |
+|---------|------------|
+| `py -3.14 manage.py runserver` | Сервер без автозапуска браузера |
+| `py -3.14 manage.py migrate` | Миграции БД |
+| `py -3.14 manage.py loaddata mainpage/fixtures/initial_locations.json` | Стартовые локации |
 
 ---
 
 ## Выгрузка на GitHub
 
-1. Создай репозиторий на GitHub (без README, если уже есть локальный).
+```bash
+git init
+git add .
+git commit -m "WhereIAm"
+git remote add origin https://github.com/ВАШ_ЛОГИН/ИМЯ_РЕПО.git
+git push -u origin main
+```
 
-2. В папке `WhereIAm`:
+Перед публикацией:
 
-   ```bash
-   git init
-   git add .
-   git commit -m "Initial commit: WhereIAm"
-   git branch -M main
-   git remote add origin https://github.com/ВАШ_ЛОГИН/ИМЯ_РЕПО.git
-   git push -u origin main
-   ```
-
-3. **Не публикуй в открытом виде** `SECRET_KEY` из `mysite/settings.py`. Перед продакшеном вынеси его в переменные окружения и смени ключ. Для учебного репозитория можно оставить как есть, но для публичного деплоя — обязательно исправь.
-
----
-
-## Полезные команды
-
-| Команда | Назначение |
-|---------|------------|
-| `python manage.py runserver` | Запуск dev-сервера |
-| `python manage.py migrate` | Применить миграции БД |
-| `python manage.py loaddata mainpage/fixtures/initial_locations.json` | Загрузить стартовые локации |
-| `python manage.py dumpdata mainpage.SfuLocation mainpage.KrasLocation --indent 2 > mainpage/fixtures/initial_locations.json` | Обновить fixture из текущей БД |
-| `python manage.py makemigrations` | Создать миграции после изменения моделей |
+- в git должны быть **`my_django_project/media/`** (фото) и **`static/`**;
+- **`db.sqlite3`**, **`dist/`**, **`build/`**, **`release/WhereIAm.exe`** в git не попадают (см. `.gitignore`);
+- exe для пользователей — через **GitHub Releases**.
 
 ---
 
-Если что-то не запускается — проверь версию Python (**3.12+**), что активировано venv и что команды выполняются из каталога `my_django_project`.
+## Если что-то не работает
+
+| Проблема | Решение |
+|----------|---------|
+| «Python не найден» | Установите Python 3.12+ и перезапустите `Запуск.bat` |
+| Порт 8000 занят | Закройте другой `runserver` или перезагрузите ПК |
+| Нет фото в игре | Добавьте `media/` в репозиторий или выполните `loaddata` |
+| Ошибка при запуске | Смотрите `my_django_project/launcher_error.log` |

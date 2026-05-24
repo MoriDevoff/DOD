@@ -1,4 +1,5 @@
 import json
+import uuid
 from pathlib import Path
 
 from django.conf import settings
@@ -121,6 +122,67 @@ def pick_unique_location_ids(model, count=5):
     return picked_ids
 
 
+SFU_SESSION_KEYS = [
+    'sfu_location_ids',
+    'sfu_scores',
+    'sfu_current_round',
+    'sfu_confirmed_round',
+    'sfu_confirmed_round_data',
+    'sfu_game_token',
+]
+
+KRAS_SESSION_KEYS = [
+    'kras_location_ids',
+    'kras_scores',
+    'kras_current_round',
+    'kras_confirmed_round',
+    'kras_confirmed_round_data',
+    'kras_game_token',
+]
+
+
+def _clear_sfu_session(request):
+    for key in SFU_SESSION_KEYS:
+        request.session.pop(key, None)
+    request.session.modified = True
+
+
+def _clear_kras_session(request):
+    for key in KRAS_SESSION_KEYS:
+        request.session.pop(key, None)
+    request.session.modified = True
+
+
+def _init_sfu_game(request):
+    picked_ids = pick_unique_location_ids(SfuLocation, count=5)
+    if len(picked_ids) < 5:
+        return None
+
+    request.session['sfu_location_ids'] = picked_ids
+    request.session['sfu_scores'] = []
+    request.session['sfu_current_round'] = 1
+    request.session.pop('sfu_confirmed_round', None)
+    request.session.pop('sfu_confirmed_round_data', None)
+    request.session['sfu_game_token'] = str(uuid.uuid4())
+    request.session.modified = True
+    return picked_ids
+
+
+def _init_kras_game(request):
+    picked_ids = pick_unique_location_ids(KrasLocation, count=5)
+    if len(picked_ids) < 5:
+        return None
+
+    request.session['kras_location_ids'] = picked_ids
+    request.session['kras_scores'] = []
+    request.session['kras_current_round'] = 1
+    request.session.pop('kras_confirmed_round', None)
+    request.session.pop('kras_confirmed_round_data', None)
+    request.session['kras_game_token'] = str(uuid.uuid4())
+    request.session.modified = True
+    return picked_ids
+
+
 # ───────────────────────────────────────────────
 # Режим СФУ
 # ───────────────────────────────────────────────
@@ -197,23 +259,14 @@ def sfu_mode(request):
 
             SfuRecord.objects.create(name=name, score=total_score)
 
-            for key in ['sfu_location_ids', 'sfu_scores', 'sfu_current_round', 'sfu_confirmed_round', 'sfu_confirmed_round_data']:
-                request.session.pop(key, None)
+            _clear_sfu_session(request)
 
             return JsonResponse({'success': True, 'total_score': total_score})
 
     # GET — начало игры или новый раунд
     if 'sfu_location_ids' not in request.session or request.session.get('sfu_current_round', 1) > 5:
-        picked_ids = pick_unique_location_ids(SfuLocation, count=5)
-        if len(picked_ids) < 5:
+        if _init_sfu_game(request) is None:
             return render(request, 'mainpage/sfu.html', {'error': 'Недостаточно локаций'})
-
-        request.session['sfu_location_ids'] = picked_ids
-        request.session['sfu_scores'] = []
-        request.session['sfu_current_round'] = 1
-        request.session.pop('sfu_confirmed_round', None)
-        request.session.pop('sfu_confirmed_round_data', None)
-        request.session.modified = True
 
     current_round = request.session['sfu_current_round']
     current_id = request.session['sfu_location_ids'][current_round - 1]
@@ -221,14 +274,14 @@ def sfu_mode(request):
     try:
         current_loc = SfuLocation.objects.get(id=current_id)
     except SfuLocation.DoesNotExist:
-        for key in ['sfu_location_ids', 'sfu_scores', 'sfu_current_round', 'sfu_confirmed_round', 'sfu_confirmed_round_data']:
-            request.session.pop(key, None)
+        _clear_sfu_session(request)
         return redirect('sfu_mode')
 
     return render(request, 'mainpage/sfu.html', {
         'current_round': current_round,
         'photo_url': current_loc.photo.url,
         'total_rounds': 5,
+        'game_token': request.session.get('sfu_game_token', ''),
     })
 
 
@@ -308,23 +361,14 @@ def kras_mode(request):
 
             KrasRecord.objects.create(name=name, score=total_score)
 
-            for key in ['kras_location_ids', 'kras_scores', 'kras_current_round', 'kras_confirmed_round', 'kras_confirmed_round_data']:
-                request.session.pop(key, None)
+            _clear_kras_session(request)
 
             return JsonResponse({'success': True, 'total_score': total_score})
 
     # GET — начало игры или новый раунд
     if 'kras_location_ids' not in request.session or request.session.get('kras_current_round', 1) > 5:
-        picked_ids = pick_unique_location_ids(KrasLocation, count=5)
-        if len(picked_ids) < 5:
+        if _init_kras_game(request) is None:
             return render(request, 'mainpage/kras.html', {'error': 'Недостаточно локаций'})
-
-        request.session['kras_location_ids'] = picked_ids
-        request.session['kras_scores'] = []
-        request.session['kras_current_round'] = 1
-        request.session.pop('kras_confirmed_round', None)
-        request.session.pop('kras_confirmed_round_data', None)
-        request.session.modified = True
 
     current_round = request.session['kras_current_round']
     current_id = request.session['kras_location_ids'][current_round - 1]
@@ -332,14 +376,14 @@ def kras_mode(request):
     try:
         current_loc = KrasLocation.objects.get(id=current_id)
     except KrasLocation.DoesNotExist:
-        for key in ['kras_location_ids', 'kras_scores', 'kras_current_round', 'kras_confirmed_round', 'kras_confirmed_round_data']:
-            request.session.pop(key, None)
+        _clear_kras_session(request)
         return redirect('kras_mode')
 
     return render(request, 'mainpage/kras.html', {
         'current_round': current_round,
         'photo_url': current_loc.photo.url,
         'total_rounds': 5,
+        'game_token': request.session.get('kras_game_token', ''),
     })
 
 
@@ -361,15 +405,21 @@ def records(request):
 def reset_game(request, mode: str):
     mode = (mode or '').lower()
     if mode == 'sfu':
-        for key in ['sfu_location_ids', 'sfu_scores', 'sfu_current_round']:
-            request.session.pop(key, None)
-        request.session.modified = True
-        return redirect('play')
+        _clear_sfu_session(request)
+    elif mode == 'kras':
+        _clear_kras_session(request)
+    return redirect('home')
+
+
+def start_game(request, mode: str):
+    """Сбросить сессию и начать новую игру в выбранном режиме."""
+    mode = (mode or '').lower()
+    if mode == 'sfu':
+        _clear_sfu_session(request)
+        return redirect('sfu_mode')
     if mode == 'kras':
-        for key in ['kras_location_ids', 'kras_scores', 'kras_current_round']:
-            request.session.pop(key, None)
-        request.session.modified = True
-        return redirect('play')
+        _clear_kras_session(request)
+        return redirect('kras_mode')
     return redirect('play')
 
 
