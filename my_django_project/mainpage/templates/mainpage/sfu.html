@@ -392,7 +392,12 @@
 
         exitBtn.addEventListener('click', (e) => {
             const ok = window.confirm('Выйти и сбросить текущую игру?');
-            if (!ok) e.preventDefault();
+            if (!ok) {
+                e.preventDefault();
+                return;
+            }
+
+            clearGameState();
         });
 
         confirmBtn.addEventListener('click', async function() {

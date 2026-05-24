@@ -25,6 +25,21 @@ def ensure_runtime_paths(root: Path) -> None:
         (root / folder_name).mkdir(parents=True, exist_ok=True)
 
 
+def copy_tree_if_missing(source: Path, destination: Path) -> None:
+    if not source.exists():
+        return
+
+    destination.mkdir(parents=True, exist_ok=True)
+    for item in source.rglob('*'):
+        relative_path = item.relative_to(source)
+        target = destination / relative_path
+        if item.is_dir():
+            target.mkdir(parents=True, exist_ok=True)
+        elif not target.exists():
+            target.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(item, target)
+
+
 def seed_database(root: Path) -> None:
     database_path = root / 'db.sqlite3'
     if database_path.exists():
@@ -33,6 +48,15 @@ def seed_database(root: Path) -> None:
     bundled_database = Path(getattr(sys, '_MEIPASS', root)) / 'db.sqlite3'
     if bundled_database.exists():
         shutil.copy2(bundled_database, database_path)
+
+
+def seed_media(root: Path) -> None:
+    media_root = root / 'media'
+    bundled_media = Path(getattr(sys, '_MEIPASS', root)) / 'media'
+
+    has_any_media = media_root.exists() and any(media_root.iterdir())
+    if not has_any_media:
+        copy_tree_if_missing(bundled_media, media_root)
 
 
 def wait_for_server(host: str, port: int, timeout: float = 30.0) -> bool:
@@ -103,6 +127,7 @@ def main() -> None:
     root = project_root()
     ensure_runtime_paths(root)
     seed_database(root)
+    seed_media(root)
 
     server_thread = threading.Thread(target=run_django_server, daemon=False)
     server_thread.start()
