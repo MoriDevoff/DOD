@@ -199,6 +199,10 @@
             opacity: 0.7;
             pointer-events: none;
         }
+
+        .leaflet-control-attribution {
+            display: none !important;
+        }
     </style>
 </head>
 <body>
@@ -236,14 +240,12 @@
         const GAME_STATE_KEY = 'whereiam-kras-state';
 
         // Стартовый обзор: весь Красноярск
-        const map = L.map('map').setView([56.015, 92.893], 11);
+        const map = L.map('map', { attributionControl: false }).setView([56.015, 92.893], 11);
         L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
             maxZoom: 19,
             referrerPolicy: 'strict-origin-when-cross-origin',
-            attribution: '&copy; OpenStreetMap contributors'
+            attribution: ''
         }).addTo(map);
-
-        map.attributionControl.setPrefix(false);
 
         const greenMarkerSvg = `
             <svg xmlns="http://www.w3.org/2000/svg" width="25" height="41" viewBox="0 0 25 41">
