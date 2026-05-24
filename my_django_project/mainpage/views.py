@@ -1,9 +1,14 @@
 import json
+from pathlib import Path
+
+from django.conf import settings
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.views.decorators.http import require_POST
+from django.urls import reverse
 from django.contrib.admin.views.decorators import staff_member_required
+from .forms import LocationTypeForm, KrasLocationForm, SfuLocationForm
 from .models import SfuLocation, SfuRecord, KrasLocation, KrasRecord
 import random
 import traceback
@@ -129,9 +134,12 @@ def sfu_mode(request):
         if 'confirm_guess' in request.POST:
             current_round = request.session.get('sfu_current_round', 1)
             location_ids = request.session.get('sfu_location_ids', [])
+            confirmed_round = request.session.get('sfu_confirmed_round')
 
             if current_round > 5 or not location_ids:
                 return JsonResponse({'success': False, 'error': 'Игра завершена или сессия сломана'})
+            if confirmed_round == current_round:
+                return JsonResponse({'success': False, 'error': 'Этот раунд уже подтверждён'})
 
             try:
                 correct_id = location_ids[current_round - 1]
@@ -146,6 +154,7 @@ def sfu_mode(request):
                 scores = request.session.get('sfu_scores', [])
                 scores.append(score)
                 request.session['sfu_scores'] = scores
+                request.session['sfu_confirmed_round'] = current_round
 
                 request.session.modified = True
 
@@ -170,6 +179,8 @@ def sfu_mode(request):
         elif 'next_round' in request.POST:
             current_round = request.session.get('sfu_current_round', 1)
             request.session['sfu_current_round'] = current_round + 1
+            request.session.pop('sfu_confirmed_round', None)
+            request.session.pop('sfu_confirmed_round_data', None)
             request.session.modified = True
             return redirect('sfu_mode')
 
@@ -186,7 +197,7 @@ def sfu_mode(request):
 
             SfuRecord.objects.create(name=name, score=total_score)
 
-            for key in ['sfu_location_ids', 'sfu_scores', 'sfu_current_round']:
+            for key in ['sfu_location_ids', 'sfu_scores', 'sfu_current_round', 'sfu_confirmed_round', 'sfu_confirmed_round_data']:
                 request.session.pop(key, None)
 
             return JsonResponse({'success': True, 'total_score': total_score})
@@ -200,6 +211,8 @@ def sfu_mode(request):
         request.session['sfu_location_ids'] = picked_ids
         request.session['sfu_scores'] = []
         request.session['sfu_current_round'] = 1
+        request.session.pop('sfu_confirmed_round', None)
+        request.session.pop('sfu_confirmed_round_data', None)
         request.session.modified = True
 
     current_round = request.session['sfu_current_round']
@@ -208,7 +221,7 @@ def sfu_mode(request):
     try:
         current_loc = SfuLocation.objects.get(id=current_id)
     except SfuLocation.DoesNotExist:
-        for key in ['sfu_location_ids', 'sfu_scores', 'sfu_current_round']:
+        for key in ['sfu_location_ids', 'sfu_scores', 'sfu_current_round', 'sfu_confirmed_round', 'sfu_confirmed_round_data']:
             request.session.pop(key, None)
         return redirect('sfu_mode')
 
@@ -232,9 +245,12 @@ def kras_mode(request):
         if 'confirm_guess' in request.POST:
             current_round = request.session.get('kras_current_round', 1)
             location_ids = request.session.get('kras_location_ids', [])
+            confirmed_round = request.session.get('kras_confirmed_round')
 
             if current_round > 5 or not location_ids:
                 return JsonResponse({'success': False, 'error': 'Игра завершена или сессия сломана'})
+            if confirmed_round == current_round:
+                return JsonResponse({'success': False, 'error': 'Этот раунд уже подтверждён'})
 
             try:
                 correct_id = location_ids[current_round - 1]
@@ -249,6 +265,7 @@ def kras_mode(request):
                 scores = request.session.get('kras_scores', [])
                 scores.append(score)
                 request.session['kras_scores'] = scores
+                request.session['kras_confirmed_round'] = current_round
 
                 request.session.modified = True
 
@@ -273,6 +290,8 @@ def kras_mode(request):
         elif 'next_round' in request.POST:
             current_round = request.session.get('kras_current_round', 1)
             request.session['kras_current_round'] = current_round + 1
+            request.session.pop('kras_confirmed_round', None)
+            request.session.pop('kras_confirmed_round_data', None)
             request.session.modified = True
             return redirect('kras_mode')
 
@@ -289,7 +308,7 @@ def kras_mode(request):
 
             KrasRecord.objects.create(name=name, score=total_score)
 
-            for key in ['kras_location_ids', 'kras_scores', 'kras_current_round']:
+            for key in ['kras_location_ids', 'kras_scores', 'kras_current_round', 'kras_confirmed_round', 'kras_confirmed_round_data']:
                 request.session.pop(key, None)
 
             return JsonResponse({'success': True, 'total_score': total_score})
@@ -303,6 +322,8 @@ def kras_mode(request):
         request.session['kras_location_ids'] = picked_ids
         request.session['kras_scores'] = []
         request.session['kras_current_round'] = 1
+        request.session.pop('kras_confirmed_round', None)
+        request.session.pop('kras_confirmed_round_data', None)
         request.session.modified = True
 
     current_round = request.session['kras_current_round']
@@ -311,7 +332,7 @@ def kras_mode(request):
     try:
         current_loc = KrasLocation.objects.get(id=current_id)
     except KrasLocation.DoesNotExist:
-        for key in ['kras_location_ids', 'kras_scores', 'kras_current_round']:
+        for key in ['kras_location_ids', 'kras_scores', 'kras_current_round', 'kras_confirmed_round', 'kras_confirmed_round_data']:
             request.session.pop(key, None)
         return redirect('kras_mode')
 
@@ -458,3 +479,177 @@ def admin_location_create(request):
 
 def authors(request):
     return render(request, 'mainpage/authors.html')
+
+
+LOCATION_CONFIG = {
+    'sfu': {
+        'label': 'SFU',
+        'model': SfuLocation,
+        'form': SfuLocationForm,
+        'badge_class': 'text-bg-primary',
+    },
+    'kras': {
+        'label': 'Kras',
+        'model': KrasLocation,
+        'form': KrasLocationForm,
+        'badge_class': 'text-bg-danger',
+    },
+}
+
+
+def _normalize_location_type(value):
+    value = (value or 'sfu').strip().lower()
+    return value if value in LOCATION_CONFIG else 'sfu'
+
+
+def _get_location_config(location_type):
+    normalized = _normalize_location_type(location_type)
+    return normalized, LOCATION_CONFIG[normalized]
+
+
+def _location_photo_name(obj):
+    return Path(obj.photo.name).name if getattr(obj, 'photo', None) and obj.photo.name else ''
+
+
+def _collect_locations(search_text='', sort_key='newest'):
+    search_text = (search_text or '').strip().lower()
+    entries = []
+
+    for location_type, config in LOCATION_CONFIG.items():
+        for obj in config['model'].objects.all():
+            entry = {
+                'type': location_type,
+                'type_label': config['label'],
+                'badge_class': config['badge_class'],
+                'id': obj.id,
+                'latitude': obj.latitude,
+                'longitude': obj.longitude,
+                'photo_url': obj.photo.url if getattr(obj, 'photo', None) else '',
+                'photo_name': _location_photo_name(obj),
+                'title': str(obj),
+                'edit_url': reverse('location_edit', kwargs={'location_type': location_type, 'pk': obj.pk}),
+                'delete_url': reverse('location_delete', kwargs={'location_type': location_type, 'pk': obj.pk}),
+            }
+            entries.append(entry)
+
+    if search_text:
+        entries = [
+            entry for entry in entries
+            if search_text in entry['type_label'].lower()
+            or search_text in str(entry['id']).lower()
+            or search_text in f"{entry['latitude']:.6f}"
+            or search_text in f"{entry['longitude']:.6f}"
+            or search_text in entry['photo_name'].lower()
+        ]
+
+    sort_key = (sort_key or 'newest').strip().lower()
+    if sort_key == 'oldest':
+        entries.sort(key=lambda item: item['id'])
+    elif sort_key == 'latitude':
+        entries.sort(key=lambda item: item['latitude'])
+    elif sort_key == 'longitude':
+        entries.sort(key=lambda item: item['longitude'])
+    elif sort_key == 'type':
+        entries.sort(key=lambda item: (item['type_label'], item['id']))
+    else:
+        entries.sort(key=lambda item: item['id'], reverse=True)
+
+    return entries
+
+
+def locations_dashboard(request):
+    query = request.GET.get('q', '')
+    sort = request.GET.get('sort', 'newest')
+    items = _collect_locations(query, sort)
+
+    selected_type = _normalize_location_type(request.POST.get('location_type') or request.GET.get('type') or 'sfu')
+    type_form = LocationTypeForm(request.POST or None, initial={'location_type': selected_type})
+    create_form_class = LOCATION_CONFIG[selected_type]['form']
+    create_form = create_form_class(request.POST or None, request.FILES or None)
+
+    if request.method == 'POST' and type_form.is_valid() and create_form.is_valid():
+        create_form.save()
+        return redirect(f"{reverse('location_dashboard')}?created=1")
+
+    return render(request, 'mainpage/admin_locations.html', {
+        'locations': items,
+        'query': query,
+        'sort': sort,
+        'total_locations': len(items),
+        'sfu_count': SfuLocation.objects.count(),
+        'kras_count': KrasLocation.objects.count(),
+        'type_form': type_form,
+        'create_form': create_form,
+        'selected_type': selected_type,
+        'selected_type_label': LOCATION_CONFIG[selected_type]['label'],
+    })
+
+
+def location_create(request):
+    location_type = _normalize_location_type(request.GET.get('type') or request.POST.get('location_type'))
+    form_class = LOCATION_CONFIG[location_type]['form']
+
+    if request.method == 'POST':
+        type_form = LocationTypeForm(request.POST)
+        if type_form.is_valid():
+            location_type = _normalize_location_type(type_form.cleaned_data['location_type'])
+            form_class = LOCATION_CONFIG[location_type]['form']
+        else:
+            type_form = LocationTypeForm(initial={'location_type': location_type})
+
+        form = form_class(request.POST, request.FILES)
+        if form.is_valid() and type_form.is_valid():
+            form.save()
+            return redirect('location_dashboard')
+    else:
+        type_form = LocationTypeForm(initial={'location_type': location_type})
+        form = form_class()
+
+    return render(request, 'mainpage/location_form.html', {
+        'form': form,
+        'location_type_form': type_form,
+        'location_type': location_type,
+        'location_label': LOCATION_CONFIG[location_type]['label'],
+        'page_title': 'Добавить локацию',
+        'submit_label': 'Сохранить локацию',
+        'is_edit': False,
+    })
+
+
+def location_edit(request, location_type, pk):
+    location_type, config = _get_location_config(location_type)
+    obj = get_object_or_404(config['model'], pk=pk)
+
+    if request.method == 'POST':
+        form = config['form'](request.POST, request.FILES, instance=obj)
+        if form.is_valid():
+            form.save()
+            return redirect('location_dashboard')
+    else:
+        form = config['form'](instance=obj)
+
+    return render(request, 'mainpage/location_form.html', {
+        'form': form,
+        'location_type_form': LocationTypeForm(initial={'location_type': location_type}),
+        'location_type': location_type,
+        'location_label': config['label'],
+        'page_title': f'Редактировать локацию #{obj.pk}',
+        'submit_label': 'Сохранить изменения',
+        'is_edit': True,
+        'object': obj,
+    })
+
+
+def location_delete(request, location_type, pk):
+    location_type, config = _get_location_config(location_type)
+    obj = get_object_or_404(config['model'], pk=pk)
+
+    if request.method == 'POST':
+        obj.delete()
+        return redirect('location_dashboard')
+
+    return render(request, 'mainpage/location_confirm_delete.html', {
+        'object': obj,
+        'location_type': location_type,
+        'location_label': config['label'],
+    })

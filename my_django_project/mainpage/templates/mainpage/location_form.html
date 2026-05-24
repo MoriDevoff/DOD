@@ -1,0 +1,223 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ page_title }}</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="{% static 'mainpage/style.css' %}">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+    <link href="https://fonts.googleapis.com/css2?family=Exo+2:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+    <style>
+        body.page-location-form {
+            display: block;
+            align-items: stretch;
+            justify-content: flex-start;
+            overflow: auto !important;
+            background: linear-gradient(180deg, #08111f 0%, #111b2d 100%);
+            min-height: 100vh;
+            height: auto;
+            padding-bottom: calc(var(--site-footer-height) + 48px);
+        }
+
+        .form-shell {
+            width: min(980px, calc(100% - 24px));
+            margin: 0 auto;
+            padding: 120px 0 32px;
+        }
+
+        .glass-card {
+            background: rgba(7, 11, 20, 0.80);
+            border: 1px solid rgba(255, 255, 255, 0.10);
+            border-radius: 24px;
+            box-shadow: 0 24px 64px rgba(0, 0, 0, 0.26);
+            color: #eef2ff;
+            backdrop-filter: blur(14px);
+        }
+
+        .image-preview {
+            min-height: 260px;
+            border-radius: 18px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.10);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .image-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        #edit-map {
+            min-height: 340px;
+            height: 340px;
+            border-radius: 18px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.10);
+        }
+    </style>
+</head>
+<body class="page-location-form">
+    {% include 'mainpage/_institute_logo.html' %}
+
+    <div class="form-shell">
+        <div class="glass-card p-4 p-lg-5">
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+                <div>
+                    <span class="badge text-bg-info mb-2">{{ location_label }}</span>
+                    <h1 class="h2 mb-2">{{ page_title }}</h1>
+                    <p class="text-white-50 mb-0">Заполняйте поля, фото будет сохранено в media автоматически.</p>
+                </div>
+                <a href="{% url 'location_dashboard' %}" class="btn btn-outline-light">Назад к списку</a>
+            </div>
+
+            {% if not is_edit %}
+                <div class="mb-4 p-3 rounded-4 bg-white bg-opacity-10">
+                    <form method="get" class="row g-3 align-items-end">
+                        <div class="col-md-8">
+                            <label class="form-label text-white">Тип локации</label>
+                            {{ location_type_form.location_type }}
+                        </div>
+                        <div class="col-md-4 d-grid">
+                            <button class="btn btn-info" type="submit">Показать форму</button>
+                        </div>
+                    </form>
+                </div>
+            {% endif %}
+
+            <div class="row g-4">
+                <div class="col-lg-7">
+                    <form method="post" enctype="multipart/form-data" class="needs-validation" novalidate>
+                        {% csrf_token %}
+                        {% if not is_edit %}
+                            <input type="hidden" name="location_type" value="{{ location_type }}">
+                        {% endif %}
+
+                        {% if form.non_field_errors %}
+                            <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+                        {% endif %}
+
+                        <div class="mb-3">
+                            <label class="form-label">Фото</label>
+                            {{ form.photo }}
+                            {% if form.photo.errors %}<div class="text-danger small mt-1">{{ form.photo.errors }}</div>{% endif %}
+                        </div>
+
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Latitude</label>
+                                {{ form.latitude }}
+                                {% if form.latitude.errors %}<div class="text-danger small mt-1">{{ form.latitude.errors }}</div>{% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Longitude</label>
+                                {{ form.longitude }}
+                                {% if form.longitude.errors %}<div class="text-danger small mt-1">{{ form.longitude.errors }}</div>{% endif %}
+                            </div>
+                        </div>
+
+                        <div class="d-flex flex-wrap gap-2 mt-4">
+                            <button class="btn btn-warning btn-lg fw-semibold" type="submit">{{ submit_label }}</button>
+                            <a href="{% url 'location_dashboard' %}" class="btn btn-outline-light btn-lg">Отмена</a>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="col-lg-5">
+                    <div class="image-preview mb-3" id="image-preview">
+                        {% if object and object.photo %}
+                            <img src="{{ object.photo.url }}" alt="Текущее фото">
+                        {% else %}
+                            <div class="d-flex align-items-center justify-content-center h-100 text-white-50 p-4 text-center">
+                                Предпросмотр появится после выбора изображения
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="p-3 rounded-4 bg-white bg-opacity-10 text-white-50">
+                        <strong class="text-white">Подсказка:</strong> можно сразу вставить точные координаты и заменить фото.
+                    </div>
+                    <div class="mt-3">
+                        <label class="form-label text-white">Карта для координат</label>
+                        <div id="edit-map"></div>
+                        <div class="text-white-50 small mt-2">Кликните по карте или перетащите метку, чтобы обновить latitude/longitude.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% include 'mainpage/_site_footer.html' %}
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <script>
+        const fileInput = document.querySelector('input[type="file"]');
+        const preview = document.getElementById('image-preview');
+        const latInput = document.getElementById('id_latitude');
+        const lonInput = document.getElementById('id_longitude');
+        const mapContainer = document.getElementById('edit-map');
+
+        if (fileInput && preview) {
+            fileInput.addEventListener('change', () => {
+                const file = fileInput.files && fileInput.files[0];
+                if (!file) return;
+
+                const reader = new FileReader();
+                reader.onload = () => {
+                    preview.innerHTML = `<img src="${reader.result}" alt="Предпросмотр">`;
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        if (mapContainer && latInput && lonInput) {
+            const fallbackLat = 56.01;
+            const fallbackLon = 92.87;
+            const startLat = parseFloat(latInput.value) || fallbackLat;
+            const startLon = parseFloat(lonInput.value) || fallbackLon;
+
+            const map = L.map('edit-map').setView([startLat, startLon], 13);
+            L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 19,
+                attribution: '&copy; OpenStreetMap contributors'
+            }).addTo(map);
+
+            const marker = L.marker([startLat, startLon], { draggable: true }).addTo(map);
+
+            const syncInputs = (lat, lon) => {
+                latInput.value = Number(lat).toFixed(7);
+                lonInput.value = Number(lon).toFixed(7);
+            };
+
+            map.on('click', (event) => {
+                const { lat, lng } = event.latlng;
+                marker.setLatLng([lat, lng]);
+                syncInputs(lat, lng);
+            });
+
+            marker.on('dragend', () => {
+                const pos = marker.getLatLng();
+                syncInputs(pos.lat, pos.lng);
+            });
+
+            [latInput, lonInput].forEach((input) => {
+                input.addEventListener('change', () => {
+                    const nextLat = parseFloat(latInput.value);
+                    const nextLon = parseFloat(lonInput.value);
+                    if (Number.isFinite(nextLat) && Number.isFinite(nextLon)) {
+                        marker.setLatLng([nextLat, nextLon]);
+                        map.setView([nextLat, nextLon], map.getZoom());
+                    }
+                });
+            });
+
+            window.addEventListener('resize', () => {
+                map.invalidateSize();
+            });
+        }
+    </script>
+</body>
+</html>

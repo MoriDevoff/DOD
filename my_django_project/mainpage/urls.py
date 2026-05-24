@@ -12,10 +12,11 @@ urlpatterns = [
     path('play/kras/', views.kras_mode, name='kras_mode'),
     path('play/records/', views.records, name='records'),
     path('play/reset/<str:mode>/', views.reset_game, name='reset_game'),
-    path('admin-panel/locations/', views.admin_locations_page, name='admin_locations_page'),
-    path('admin-panel/locations/data/', views.admin_locations_data, name='admin_locations_data'),
-    path('admin-panel/locations/update/', views.admin_location_update, name='admin_location_update'),
-    path('admin-panel/locations/create/', views.admin_location_create, name='admin_location_create'),
+    path('locations/', views.locations_dashboard, name='location_dashboard'),
+    path('locations/add/', views.location_create, name='location_create'),
+    path('locations/<str:location_type>/<int:pk>/edit/', views.location_edit, name='location_edit'),
+    path('locations/<str:location_type>/<int:pk>/delete/', views.location_delete, name='location_delete'),
+    path('admin-panel/locations/', views.locations_dashboard, name='admin_locations_page'),
 ]
 
 # Обслуживание медиа-файлов (фото из ImageField) только в режиме разработки

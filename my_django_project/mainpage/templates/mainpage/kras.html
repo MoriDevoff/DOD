@@ -231,6 +231,8 @@
 
     <script>
         const CSRF_TOKEN = '{{ csrf_token }}';
+        const CURRENT_ROUND = {{ current_round|default:1 }};
+        const GAME_STATE_KEY = 'whereiam-kras-state';
 
         // Стартовый обзор: весь Красноярск
         const map = L.map('map').setView([56.015, 92.893], 11);
@@ -242,20 +244,145 @@
 
         map.attributionControl.setPrefix(false);
 
+        const greenMarkerSvg = `
+            <svg xmlns="http://www.w3.org/2000/svg" width="25" height="41" viewBox="0 0 25 41">
+                <path d="M12.5 0C7.3 0 3 4.3 3 9.5c0 6.9 9.5 15.9 9.5 15.9S22 16.4 22 9.5C22 4.3 17.7 0 12.5 0z" fill="#2ecc71" stroke="#ffffff" stroke-width="2"/>
+                <circle cx="12.5" cy="9.5" r="4" fill="#ffffff"/>
+            </svg>
+        `;
+
         const greenIcon = new L.Icon({
-            iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
-            shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+            iconUrl: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(greenMarkerSvg),
             iconSize: [25, 41],
             iconAnchor: [12, 41],
             popupAnchor: [1, -34],
-            shadowSize: [41, 41]
+            shadowSize: [0, 0]
         });
 
         let userMarker = null;
         let correctMarker = null;
         let distanceLine = null;
+        let roundLocked = false;
+        let nextRoundAction = null;
+
+        function saveGameState(state) {
+            localStorage.setItem(GAME_STATE_KEY, JSON.stringify(state));
+        }
+
+        function clearGameState() {
+            localStorage.removeItem(GAME_STATE_KEY);
+        }
+
+        function applyConfirmedState(state) {
+            roundLocked = true;
+
+            if (userMarker) map.removeLayer(userMarker);
+            if (correctMarker) map.removeLayer(correctMarker);
+            if (distanceLine) map.removeLayer(distanceLine);
+
+            userMarker = L.marker([state.user_lat, state.user_lon]).addTo(map);
+            correctMarker = L.marker([state.correct_lat, state.correct_lon], { icon: greenIcon }).addTo(map);
+            distanceLine = L.polyline(
+                [[state.correct_lat, state.correct_lon], [state.user_lat, state.user_lon]],
+                { color: 'red', weight: 3 }
+            ).addTo(map);
+
+            document.getElementById('round-result').innerHTML =
+                `Очки: ${state.score}<br>Расстояние: ${state.distance} км`;
+            document.getElementById('round-result').classList.remove('hidden');
+
+            map.fitBounds([
+                [state.correct_lat, state.correct_lon],
+                [state.user_lat, state.user_lon]
+            ], { padding: [50, 50] });
+        }
+
+        function bindNextRoundAction() {
+            nextRoundAction = async function() {
+                confirmBtn.disabled = true;
+                clearGameState();
+
+                const nextFormData = new FormData();
+                nextFormData.append('next_round', 'true');
+                nextFormData.append('csrfmiddlewaretoken', CSRF_TOKEN);
+
+                try {
+                    await fetch(window.location.href, {
+                        method: 'POST',
+                        body: nextFormData,
+                        headers: { 'X-CSRFToken': CSRF_TOKEN },
+                        credentials: 'same-origin'
+                    });
+                    window.location.reload();
+                } catch (err) {
+                    console.error('Ошибка при переходе:', err);
+                    alert('Ошибка: ' + err.message);
+                }
+            };
+
+            confirmBtn.onclick = nextRoundAction;
+        }
+
+        function startNextRoundCountdown(nextAvailableAt) {
+            if (nextCooldownIntervalId) {
+                clearInterval(nextCooldownIntervalId);
+                nextCooldownIntervalId = null;
+            }
+
+            const updateButton = () => {
+                const remaining = Math.max(0, Math.ceil((nextAvailableAt - Date.now()) / 1000));
+                if (remaining <= 0) {
+                    confirmBtn.textContent = 'Далее';
+                    confirmBtn.disabled = false;
+                    bindNextRoundAction();
+                    if (nextCooldownIntervalId) {
+                        clearInterval(nextCooldownIntervalId);
+                        nextCooldownIntervalId = null;
+                    }
+                    return;
+                }
+
+                confirmBtn.textContent = `Далее (${remaining})`;
+                confirmBtn.disabled = true;
+            };
+
+            updateButton();
+
+            if (confirmBtn.textContent !== 'Далее') {
+                nextCooldownIntervalId = setInterval(updateButton, 1000);
+            }
+        }
+
+        function restoreGameState() {
+            const rawState = localStorage.getItem(GAME_STATE_KEY);
+            if (!rawState) return;
+
+            try {
+                const state = JSON.parse(rawState);
+
+                if (state.round !== CURRENT_ROUND) {
+                    clearGameState();
+                    return;
+                }
+
+                if (!state.confirmed) return;
+
+                applyConfirmedState(state);
+
+                if (state.is_last_round) {
+                    confirmBtn.textContent = 'Сохранить результат';
+                    confirmBtn.disabled = false;
+                    return;
+                }
+
+                startNextRoundCountdown(state.nextAvailableAt || Date.now());
+            } catch (error) {
+                clearGameState();
+            }
+        }
 
         map.on('click', function(e) {
+            if (roundLocked) return;
             if (userMarker) map.removeLayer(userMarker);
             userMarker = L.marker(e.latlng).addTo(map);
         });
@@ -279,7 +406,12 @@
                 return;
             }
 
-            if (confirmBtn.textContent.startsWith('Далее')) return;
+            if (confirmBtn.textContent.startsWith('Далее')) {
+                if (typeof nextRoundAction === 'function') {
+                    await nextRoundAction();
+                }
+                return;
+            }
             if (!userMarker) return alert('Отметьте место на карте!');
 
             confirmBtn.disabled = true;
@@ -306,6 +438,8 @@
                         `Очки: ${data.score}<br>Расстояние: ${data.distance} км`;
                     document.getElementById('round-result').classList.remove('hidden');
 
+                    roundLocked = true;
+
                     if (correctMarker) map.removeLayer(correctMarker);
                     if (distanceLine) map.removeLayer(distanceLine);
 
@@ -323,48 +457,22 @@
                         userMarker.getLatLng()
                     ], {padding: [50, 50]});
 
+                    saveGameState({
+                        round: CURRENT_ROUND,
+                        confirmed: true,
+                        is_last_round: data.is_last_round,
+                        score: data.score,
+                        total_score: data.total_score,
+                        distance: data.distance,
+                        user_lat: userMarker.getLatLng().lat,
+                        user_lon: userMarker.getLatLng().lng,
+                        correct_lat: data.correct_lat,
+                        correct_lon: data.correct_lon,
+                        nextAvailableAt: Date.now() + 3000
+                    });
+
                     if (!data.is_last_round) {
-                        if (nextCooldownIntervalId) {
-                            clearInterval(nextCooldownIntervalId);
-                            nextCooldownIntervalId = null;
-                        }
-
-                        const COOLDOWN_SECONDS = 3;
-                        let remaining = COOLDOWN_SECONDS;
-                        confirmBtn.textContent = `Далее (${remaining})`;
-                        confirmBtn.disabled = true;
-
-                        confirmBtn.onclick = async function() {
-                            confirmBtn.disabled = true;
-                            const nextFormData = new FormData();
-                            nextFormData.append('next_round', 'true');
-                            nextFormData.append('csrfmiddlewaretoken', CSRF_TOKEN);
-
-                            try {
-                                await fetch(window.location.href, {
-                                    method: 'POST',
-                                    body: nextFormData,
-                                    headers: { 'X-CSRFToken': CSRF_TOKEN },
-                                    credentials: 'same-origin'
-                                });
-                                window.location.reload();
-                            } catch (err) {
-                                console.error('Ошибка при переходе:', err);
-                                alert('Ошибка: ' + err.message);
-                            }
-                        };
-
-                        nextCooldownIntervalId = setInterval(() => {
-                            remaining -= 1;
-                            if (remaining <= 0) {
-                                clearInterval(nextCooldownIntervalId);
-                                nextCooldownIntervalId = null;
-                                confirmBtn.textContent = 'Далее';
-                                confirmBtn.disabled = false;
-                                return;
-                            }
-                            confirmBtn.textContent = `Далее (${remaining})`;
-                        }, 1000);
+                        startNextRoundCountdown(Date.now() + 3000);
                     } else {
                         document.getElementById('last-score').textContent = data.score;
                         document.getElementById('total-score').textContent = data.total_score;
@@ -408,6 +516,7 @@
                 const data = await response.json();
 
                 if (data.success) {
+                    clearGameState();
                     alert('Рекорд сохранён!');
                     window.location.href = "{% url 'records' %}";
                 } else {
@@ -417,6 +526,8 @@
                 alert('Ошибка: ' + err.message);
             }
         });
+
+        restoreGameState();
     </script>
     {% include 'mainpage/_site_footer.html' %}
     <script src="{% static 'mainpage/script.js' %}"></script>

@@ -10,10 +10,25 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
+import sys
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+if getattr(sys, 'frozen', False):
+    APP_ROOT = Path(sys.executable).resolve().parent
+    DATA_ROOT = Path(getattr(sys, '_MEIPASS', APP_ROOT))
+else:
+    APP_ROOT = BASE_DIR
+    DATA_ROOT = BASE_DIR
+
+
+def _existing_paths(*candidates):
+    paths = []
+    for candidate in candidates:
+        if candidate.exists() and candidate not in paths:
+            paths.append(candidate)
+    return paths
 
 
 # Quick-start development settings - unsuitable for production
@@ -25,7 +40,7 @@ SECRET_KEY = 'django-insecure-rv#g242g_3nt!6=b9kio$l5!khuu_wf$*nur!n)s&vhyiquz2r
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
 
 
 # Application definition
@@ -55,7 +70,7 @@ ROOT_URLCONF = 'mysite.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': _existing_paths(APP_ROOT / 'templates', DATA_ROOT / 'templates'),
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -76,7 +91,7 @@ WSGI_APPLICATION = 'mysite.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'NAME': (APP_ROOT / 'db.sqlite3') if getattr(sys, 'frozen', False) else (BASE_DIR / 'db.sqlite3'),
     }
 }
 
@@ -115,7 +130,8 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
-STATIC_URL = 'static/'
-STATICFILES_DIRS = [BASE_DIR / 'static']
+STATIC_URL = '/static/'
+STATICFILES_DIRS = _existing_paths(APP_ROOT / 'static', DATA_ROOT / 'static')
+STATIC_ROOT = APP_ROOT / 'staticfiles'
 MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'
+MEDIA_ROOT = APP_ROOT / 'media'
