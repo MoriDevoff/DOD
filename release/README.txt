@@ -16,5 +16,5 @@
 - откройте http://127.0.0.1:8000/ вручную;
 - посмотрите launcher_error.log рядом с WhereIAm.exe.
 
-Файл WhereIAm.exe собирается разработчиком командой:
-  my_django_project\build_onefile.bat
+Файл WhereIAm.exe входит в архив с GitHub (папка release\).
+Пересборка для разработчиков: ..\Собрать_exe.bat

@@ -188,7 +188,7 @@ def ensure_database_ready() -> None:
     )
 
 
-def run_django_server() -> None:
+def run_django_server(server_error: list[BaseException]) -> None:
     root = project_root()
     try:
         setup_django(root)
@@ -211,11 +211,11 @@ def run_django_server() -> None:
         )
     except Exception as error:
         write_error_log(root, error)
+        server_error.append(error)
         show_error(f'Не удалось запустить проект.\n\n{error}')
-        raise
 
 
-def main() -> None:
+def main() -> int:
     ensure_stdio()
     root = project_root()
     ensure_runtime_paths(root)
@@ -226,27 +226,56 @@ def main() -> None:
     seed_database(root)
     seed_media(root)
 
-    server_thread = threading.Thread(target=run_django_server, daemon=False)
+    server_error: list[BaseException] = []
+    server_thread = threading.Thread(
+        target=run_django_server,
+        args=(server_error,),
+        daemon=False,
+    )
     server_thread.start()
 
-    if not wait_for_server(HOST, PORT):
-        show_error(
-            f'Сервер не ответил на {URL}.\n'
-            f'Проверьте launcher_error.log в папке проекта.'
-        )
-        return
+    deadline = time.time() + 90.0
+    while time.time() < deadline:
+        if server_error:
+            if not getattr(sys, 'frozen', False):
+                safe_print(f'\nОшибка: {server_error[0]}\nСм. launcher_error.log\n')
+            return 1
+        if not server_thread.is_alive():
+            show_error(
+                'Сервер остановился при запуске.\n'
+                f'См. launcher_error.log в папке:\n{root}'
+            )
+            return 1
+        if wait_for_server(HOST, PORT, timeout=0.5):
+            open_browser()
+            server_thread.join()
+            return 0
+        time.sleep(0.25)
 
-    open_browser()
-    server_thread.join()
+    show_error(
+        f'Сервер не ответил на {URL} за 90 с.\n'
+        f'Проверьте launcher_error.log в папке:\n{root}'
+    )
+    return 1
 
 
 if __name__ == '__main__':
     ensure_stdio()
+    exit_code = 0
     try:
-        main()
+        exit_code = main()
     except KeyboardInterrupt:
         safe_print('\nСервер остановлен.')
-    except Exception:
-        if not getattr(sys, 'frozen', False):
-            input('\nНажмите Enter, чтобы закрыть окно...')
-        sys.exit(1)
+    except Exception as error:
+        write_error_log(project_root(), error)
+        show_error(f'Не удалось запустить проект.\n\n{error}')
+        exit_code = 1
+
+    if exit_code != 0 and not getattr(sys, 'frozen', False):
+        safe_print('\nНажмите Enter, чтобы закрыть окно...')
+        try:
+            input()
+        except EOFError:
+            pass
+
+    sys.exit(exit_code)

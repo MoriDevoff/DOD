@@ -8,20 +8,20 @@ venv/
 .venv/
 env/
 
-# Django (локальная БД — создаётся migrate/loaddata, в exe вшивается при сборке)
+# Django (локальная БД — создаётся при первом запуске)
 my_django_project/db.sqlite3
 my_django_project/db.sqlite3-journal
 my_django_project/staticfiles/
 *.log
 launcher_error.log
+release/launcher_error.log
 local_settings.py
 
-# PyInstaller (артефакты сборки)
+# PyInstaller (промежуточные файлы сборки)
 my_django_project/build/
 my_django_project/dist/
 
-# Готовый exe — не коммитить (выкладывайте через GitHub Releases или ZIP)
-release/WhereIAm.exe
+# Архивы релиза (exe в git хранится: release/WhereIAm.exe)
 release/*.zip
 
 # Секреты
@@ -36,4 +36,7 @@ release/*.zip
 Thumbs.db
 Desktop.ini
 
-# В git ДОЛЖНЫ быть: my_django_project/media/, static/, fixtures/
+# В git ДОЛЖНЫ быть:
+#   release/WhereIAm.exe
+#   my_django_project/media/
+#   my_django_project/static/
