@@ -123,6 +123,10 @@
             background: rgba(255, 255, 255, 0.04);
             border-radius: 20px;
         }
+
+        .leaflet-control-attribution {
+            display: none !important;
+        }
     </style>
 </head>
 <body class="page-admin-locations">
@@ -300,10 +304,10 @@
             const startLat = parseFloat(latInput.value) || fallbackLat;
             const startLon = parseFloat(lonInput.value) || fallbackLon;
 
-            const map = L.map('create-map').setView([startLat, startLon], 11);
+            const map = L.map('create-map', { attributionControl: false }).setView([startLat, startLon], 11);
             L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 maxZoom: 19,
-                attribution: '&copy; OpenStreetMap contributors'
+                attribution: ''
             }).addTo(map);
 
             const marker = L.marker([startLat, startLon], { draggable: true }).addTo(map);
