@@ -7,32 +7,20 @@
 ## Скачали ZIP с GitHub?
 
 1. Распакуйте архив.
-2. Дважды щёлкните **`Играть_без_Python.bat`** (Python **не нужен**).
+2. Перейдите в папку release
+3. Запустите файл WhereIAm.exe
 
-Или напрямую: **`release/WhereIAm.exe`**
-
-Подсказка: [НАЧНИ_ОТСЮДА.txt](НАЧНИ_ОТСЮДА.txt)
-
-> В репозитории лежит готовый `release/WhereIAm.exe` (~50 МБ).  
 > После обновления кода пересоберите: `Собрать_exe.bat` и закоммитьте новый exe.
-
-**Запасной вариант** (если exe не работает): **`Запуск.bat`** — нужен Python 3.12+.
 
 ---
 
-## Без Python
-
-**`Играть_без_Python.bat`** или **`release/WhereIAm.exe`** → браузер откроется на **http://127.0.0.1:8000/**
+**`release/WhereIAm.exe`** → браузер откроется на **http://127.0.0.1:8000/**
 
 > **Интернет** нужен для карты и шрифтов.
 
 ---
 
 ## Разработчик — из исходников
-
-Python **3.12+** → двойной щелчок **`Запуск.bat`**.
-
-Или вручную:
 
 ```powershell
 cd my_django_project
@@ -41,7 +29,7 @@ py -3.14 launcher.py
 
 ---
 
-## Сборка exe (один раз, на вашем ПК)
+## Сборка exe
 
 ```powershell
 # из корня репозитория
@@ -56,8 +44,6 @@ py -3.14 launcher.py
 |------|------------|
 | `release/WhereIAm.exe` | **Отдавать пользователям** (Python не нужен) |
 | `my_django_project/dist/WhereIAm.exe` | Копия после PyInstaller |
-
-Выкладывайте **`WhereIAm.exe`** в **GitHub Releases** (в git exe не коммитится — см. `.gitignore`).
 
 Подробности: [EXE_BUILD_GUIDE.md](my_django_project/EXE_BUILD_GUIDE.md).
 
@@ -77,20 +63,20 @@ py -3.14 launcher.py
 ```
 WhereIAm/
 ├── Играть_без_Python.bat      ← запуск собранного exe
-├── Собрать_exe.bat            ← сборка exe (нужен Python)
-├── Запуск.bat                 ← запуск из исходников
+├── Собрать_exe.bat            ← сборка exe
+├── Запуск.bat                 
 ├── release/
 │   ├── README.txt
-│   └── WhereIAm.exe           ← после сборки (в git не хранится)
+│   └── WhereIAm.exe           
 ├── README.md
 └── my_django_project/
-    ├── launcher.py            ← логика автозапуска
+    ├── launcher.py            
     ├── manage.py
     ├── requirements.txt
     ├── mysite/
     ├── mainpage/
     ├── static/mainpage/
-    └── media/                 ← фото локаций (должны быть в репозитории)
+    └── media/                 ← фото локаций
 ```
 
 После клона убедитесь, что в репозитории есть папка **`my_django_project/media/`** с фотографиями — иначе игра запустится, но картинки не отобразятся.
